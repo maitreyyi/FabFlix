@@ -52,6 +52,8 @@ public class SingleMovieServlet extends HttpServlet {
         try (Connection conn = dataSource.getConnection()) {
             // Get a connection from dataSource
 
+            JsonArray jsonArray = new JsonArray();
+
             // Get stars and movie information
             // Construct a query with parameter represented by "?"
             String stars_query = "SELECT * from stars as s, stars_in_movies as sim, movies as m " +
@@ -67,8 +69,6 @@ public class SingleMovieServlet extends HttpServlet {
             // Perform the query
             ResultSet rs = statement.executeQuery();
 
-            JsonArray jsonArray = new JsonArray();
-
             // Iterate through each row of rs
             while (rs.next()) {
 
@@ -83,12 +83,12 @@ public class SingleMovieServlet extends HttpServlet {
                 // Create a JsonObject based on the data we retrieve from rs
 
                 JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("star_id", starId);
-                jsonObject.addProperty("star_name", starName);
                 jsonObject.addProperty("movie_id", movieId);
                 jsonObject.addProperty("movie_title", movieTitle);
                 jsonObject.addProperty("movie_year", movieYear);
                 jsonObject.addProperty("movie_director", movieDirector);
+                jsonObject.addProperty("star_id", starId);
+                jsonObject.addProperty("star_name", starName);
 
                 jsonArray.add(jsonObject);
             }
