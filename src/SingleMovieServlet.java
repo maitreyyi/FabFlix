@@ -16,7 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 // Declaring a WebServlet called SingleStarServlet, which maps to url "/api/single-star"
-@WebServlet(name = "SingleStarServlet", urlPatterns = "/api/single-star")
+@WebServlet(name = "SingleStarServlet", urlPatterns = "/api/single-movie")
 public class SingleMovieServlet extends HttpServlet {
     private static final long serialVersionUID = 2L;
 
@@ -25,7 +25,7 @@ public class SingleMovieServlet extends HttpServlet {
 
     public void init(ServletConfig config) {
         try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedbexample");
+            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
         } catch (NamingException e) {
             e.printStackTrace();
         }
@@ -52,12 +52,13 @@ public class SingleMovieServlet extends HttpServlet {
         try (Connection conn = dataSource.getConnection()) {
             // Get a connection from dataSource
 
+            // Get stars and movie information
             // Construct a query with parameter represented by "?"
-            String query = "SELECT * from stars as s, stars_in_movies as sim, movies as m " +
-                    "where m.id = sim.movieId and sim.starId = s.id and s.id = ?";
+            String stars_query = "SELECT * from stars as s, stars_in_movies as sim, movies as m " +
+                    "where m.id = sim.movieId and sim.starId = s.id and m.id = ?";
 
             // Declare our statement
-            PreparedStatement statement = conn.prepareStatement(query);
+            PreparedStatement statement = conn.prepareStatement(stars_query);
 
             // Set the parameter represented by "?" in the query to the id we get from url,
             // num 1 indicates the first "?" in the query
@@ -73,7 +74,6 @@ public class SingleMovieServlet extends HttpServlet {
 
                 String starId = rs.getString("starId");
                 String starName = rs.getString("name");
-                String starDob = rs.getString("birthYear");
 
                 String movieId = rs.getString("movieId");
                 String movieTitle = rs.getString("title");
@@ -85,7 +85,6 @@ public class SingleMovieServlet extends HttpServlet {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("star_id", starId);
                 jsonObject.addProperty("star_name", starName);
-                jsonObject.addProperty("star_dob", starDob);
                 jsonObject.addProperty("movie_id", movieId);
                 jsonObject.addProperty("movie_title", movieTitle);
                 jsonObject.addProperty("movie_year", movieYear);
