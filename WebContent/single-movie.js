@@ -33,22 +33,22 @@ function handleResult(resultData) {
     let movieInfoElement = jQuery("#movie_info");
 
     // append two html <p> created to the h3 body, which will refresh the page
-    movieInfoElement.append("<p>Title: " + resultData[0]["movie_title"] + "</p>" +
-        "<p>Release Year: " + resultData[0]["movie_year"] + "</p>" +
-        "<p>Director: " + resultData[0]["movie_title"] + "</p>" +
-        "<p>Rating: " + resultData[3]["rating"] + "</p>");
+    movieInfoElement.append("<p>Title: " + resultData["movie_title"] + "</p>" +
+        "<p>Release Year: " + resultData["movie_year"] + "</p>" +
+        "<p>Director: " + resultData["movie_title"] + "</p>" +
+        "<p>Rating: " + resultData["movie_year"] + "</p>");
 
     console.log("handleResult: populating movie table from resultData");
 
-    // Populate the genre table
+    /** Populate the genre table */
     // Find the empty table body by id "genre_table_body"
     let genreTableBodyElement = jQuery("#genre_table_body");
 
     // Concatenate the html tags with resultData jsonObject to create table rows
-    for (let i = 0; i < resultData[2]["genres"].length; i++) {
+    for (let i = 0; i < resultData["genres"].length; i++) {
         let rowHTML = "";
         rowHTML += "<tr>";
-        rowHTML += "<th>" + resultData[2]["genres"][i]["genre_name"] + "</th>";
+        rowHTML += "<th>" + resultData["genres"][i]["genre_name"] + "</th>";
         rowHTML += "</tr>";
 
         // Append the row created to the table body, which will refresh the page
@@ -56,14 +56,15 @@ function handleResult(resultData) {
     }
     let starsTableBodyElement = jQuery("#stars_table_body");
 
+    /** Populate the stars table */
     // Concatenate the html tags with resultData jsonObject to create table rows
-    for (let i = 0; i < resultData[1]["stars"].length; i++) {
+    for (let i = 0; i < resultData["stars"].length; i++) {
         let rowHTML = "";
         rowHTML += "<tr>";
         rowHTML += "<th>" +
             // Add a link to single-star.html with id passed with GET url parameter
-            '<a href="single-star.html?id=' + resultData[1]["stars"][i]['star_id'] + '">'
-            + resultData[1]["stars"][i]["star_name"] +     // display star_name for the link text
+            '<a href="single-star.html?id=' + resultData["stars"][i]['star_id'] + '">'
+            + resultData["stars"][i]["star_name"] +     // display star_name for the link text
             '</a>' +
             "</th>";
         rowHTML += "</tr>";
