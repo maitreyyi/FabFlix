@@ -137,6 +137,24 @@ public class SingleMovieServlet extends HttpServlet {
             genreObject.add("genres", genreArray);
             jsonArray.add(genreObject);
 
+            statement = conn.prepareStatement(rating_query);
+
+            // Set the parameter represented by "?" in the query to the id we get from url,
+            // num 1 indicates the first "?" in the query
+            statement.setString(1, id);
+
+            // Perform the query
+            rs = statement.executeQuery();
+
+            rs.next();
+
+            String rating = rs.getString("rating");
+
+            JsonObject ratingObj = new JsonObject();
+            ratingObj.addProperty("rating", rating);
+
+            jsonArray.add(ratingObj);
+
             rs.close();
             statement.close();
 
