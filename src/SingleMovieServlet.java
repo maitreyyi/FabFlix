@@ -54,7 +54,8 @@ public class SingleMovieServlet extends HttpServlet {
 
             // Get stars and movie information
             // Construct a queries with parameter represented by "?"
-            String stars_query = "SELECT * from stars as s, stars_in_movies as sim, movies as m " +
+            String stars_query = "SELECT m.title, m.year, m.director, sim.starId, s.name " +
+                    "from stars as s, stars_in_movies as sim, movies as m " +
                     "where m.id = sim.movieId and sim.starId = s.id and m.id = ?";
 
             String genre_query = "SELECT g.name from genres as g, genres_in_movies as gim " +
@@ -78,13 +79,11 @@ public class SingleMovieServlet extends HttpServlet {
             JsonObject movieInfoObj = new JsonObject();
 
             // Convert row data into strings
-            String movieId = rs.getString("movieId");
             String movieTitle = rs.getString("title");
             String movieYear = rs.getString("year");
             String movieDirector = rs.getString("director");
 
             // Add data as properties of the object
-            movieInfoObj.addProperty("movie_id", movieId);
             movieInfoObj.addProperty("movie_title", movieTitle);
             movieInfoObj.addProperty("movie_year", movieYear);
             movieInfoObj.addProperty("movie_director", movieDirector);
