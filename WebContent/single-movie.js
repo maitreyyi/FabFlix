@@ -35,8 +35,8 @@ function handleResult(resultData) {
     // append two html <p> created to the h3 body, which will refresh the page
     movieInfoElement.append("<p>Title: " + resultData["movie_title"] + "</p>" +
         "<p>Release Year: " + resultData["movie_year"] + "</p>" +
-        "<p>Director: " + resultData["movie_title"] + "</p>" +
-        "<p>Rating: " + resultData["movie_year"] + "</p>");
+        "<p>Director: " + resultData["movie_director"] + "</p>" +
+        "<p>Rating: " + resultData["rating"] + "</p>");
 
     console.log("handleResult: populating movie table from resultData");
 
