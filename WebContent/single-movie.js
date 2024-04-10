@@ -30,12 +30,14 @@ function handleResult(resultData) {
 
     // populate the movie info h3
     // find the empty h3 body by id "movie_info"
+    let movieTitleElement = jQuery("#movie_title");
+    movieTitleElement.append("<h1>" + resultData["movie_title"] +
+        " <span style='font-size: 50%'><i>(" + resultData["movie_year"] + ")</i></span></h1>");
+
     let movieInfoElement = jQuery("#movie_info");
 
     // append two html <p> created to the h3 body, which will refresh the page
-    movieInfoElement.append("<p>Title: " + resultData["movie_title"] + "</p>" +
-        "<p>Release Year: " + resultData["movie_year"] + "</p>" +
-        "<p>Director: " + resultData["movie_director"] + "</p>" +
+    movieInfoElement.append("<p>Director: " + resultData["movie_director"] + "</p>" +
         "<p>Rating: " + resultData["rating"] + "</p>");
 
     console.log("handleResult: populating movie table from resultData");
@@ -45,33 +47,30 @@ function handleResult(resultData) {
     let genreTableBodyElement = jQuery("#genre_table_body");
 
     // Concatenate the html tags with resultData jsonObject to create table rows
+    let rowHTML = "";
+    rowHTML += "<tr><th>";
     for (let i = 0; i < resultData["genres"].length; i++) {
-        let rowHTML = "";
-        rowHTML += "<tr>";
-        rowHTML += "<th>" + resultData["genres"][i]["genre_name"] + "</th>";
-        rowHTML += "</tr>";
-
-        // Append the row created to the table body, which will refresh the page
-        genreTableBodyElement.append(rowHTML);
+        rowHTML += resultData["genres"][i]["genre_name"]
+        if (i + 1 < resultData["genres"].length)
+            rowHTML += ", ";
     }
-    let starsTableBodyElement = jQuery("#stars_table_body");
+    rowHTML += "</th><th>";
 
-    /** Populate the stars table */
-    // Concatenate the html tags with resultData jsonObject to create table rows
     for (let i = 0; i < resultData["stars"].length; i++) {
-        let rowHTML = "";
-        rowHTML += "<tr>";
-        rowHTML += "<th>" +
-            // Add a link to single-star.html with id passed with GET url parameter
-            '<a href="single-star.html?id=' + resultData["stars"][i]['star_id'] + '">'
-            + resultData["stars"][i]["star_name"] +     // display star_name for the link text
-            '</a>' +
-            "</th>";
-        rowHTML += "</tr>";
-
-        // Append the row created to the table body, which will refresh the page
-        starsTableBodyElement.append(rowHTML);
+        // Add a link to single-star.html with id passed with GET url parameter
+        rowHTML +=
+        '<a href="single-star.html?id=' + resultData["stars"][i]['star_id'] + '">'
+        + resultData["stars"][i]["star_name"] +     // display star_name for the link text
+        '</a>'
+        if (i + 1 < resultData["stars"].length)
+            rowHTML += ", ";
     }
+
+    rowHTML += "</th></tr>";
+
+    // Append the row created to the table body, which will refresh the page
+    genreTableBodyElement.append(rowHTML);
+
 }
 
 /**

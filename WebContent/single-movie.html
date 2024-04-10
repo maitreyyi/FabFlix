@@ -28,33 +28,27 @@
         </ul>
     </header>
 </div>
-<h1>Single Movie Page</h1>
 
-<!-- Creates header for page-->
-<!-- This is where title, year, director, and rating is populated -->
-<h3 id="movie_info"></h3>
-<!-- Create a table for the genre and rating-->
-<table id=genre_table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Genres</th>
-    </tr>
-    </thead>
+<div class="mx-auto mt-5" style="width: 80%">
+    <h1 id="movie_title"></h1>
 
-    <!-- Table body is populated dynamically -->
-    <tbody id=genre_table_body></tbody>
-</table>
+    <!-- Creates header for page-->
+    <!-- This is where title, year, director, and rating is populated -->
+    <h5 id="movie_info"></h5>
 
-<table id=stars_table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Stars</th>
-    </tr>
-    </thead>
+    <!-- Create a table for the genre and rating-->
+    <table id=genre_table class="table table-striped table-bordered rounded overflow-hidden">
+        <thead class="table-primary">
+        <tr>
+            <th>Genres</th>
+            <th>Stars</th>
+        </tr>
+        </thead>
 
-    <!-- Table body is populated dynamically -->
-    <tbody id=stars_table_body></tbody>
-</table>
+        <!-- Table body is populated dynamically -->
+        <tbody id=genre_table_body></tbody>
+    </table>
+</div>
 
 
 <!-- Load jQuery and Bootstrap JS -->
