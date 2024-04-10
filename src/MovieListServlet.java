@@ -15,8 +15,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-// Declaring a WebServlet called SingleStarServlet, which maps to url "/api/single-star"
-@WebServlet(name = "SingleStarServlet", urlPatterns = "/api/single-movie")
+// Declaring a WebServlet called SingleStarServlet, which maps to url "/api/movie-list"
+@WebServlet(name = "MovieListServlet", urlPatterns = "/api/movie-list")
 public class MovieListServlet extends HttpServlet {
     private static final long serialVersionUID = 2L;
 
@@ -54,18 +54,21 @@ public class MovieListServlet extends HttpServlet {
 
             // Get stars and movie information
             // Construct a queries with parameter represented by "?"
-            String stars_query = "SELECT m.title, m.year, m.director, sim.starId, s.name " +
-                    "from stars as s, stars_in_movies as sim, movies as m " +
-                    "where m.id = sim.movieId and sim.starId = s.id and m.id = ?";
+            String movie_query = "SELECT m.title, m.year, m.director, r.rating " +
+                    "from movies as m, ratings as r " +
+                    "where r.movieId = ?";
+
+            String stars_query = "SELECT sim.starId, s.name " +
+                    "from stars as s, stars_in_movies as sim " +
+                    "where sim.starId = s.id and sim.movieId = ? " +
+                    "limit 3";
 
             String genre_query = "SELECT g.name from genres as g, genres_in_movies as gim " +
-                    "where gim.genreId = g.id and gim.movieId = ?";
-
-            String rating_query = "SELECT rating from ratings " +
-                    "where movieId = ?";
+                    "where gim.genreId = g.id and gim.movieId = ? " +
+                    "limit 3";
 
             // Declare statement for stars_query
-            PreparedStatement statement = conn.prepareStatement(stars_query);
+            PreparedStatement statement = conn.prepareStatement(movie_query);
 
             // Set the parameter represented by "?" in the query to the id we get from url,
             // num 1 indicates the first "?" in the query
@@ -73,78 +76,66 @@ public class MovieListServlet extends HttpServlet {
 
             // Perform the query
             ResultSet rs = statement.executeQuery();
-            // Get first row of data
-            rs.next();
             // Declare object for movie information
-            JsonObject movieInfoObj = new JsonObject();
+            JsonArray movieArray = new JsonArray();
 
-            // Convert row data into strings
-            String movieTitle = rs.getString("title");
-            String movieYear = rs.getString("year");
-            String movieDirector = rs.getString("director");
+            while(rs.next())
+            {
+                JsonObject movieObj = new JsonObject();
 
-            // Add data as properties of the object
-            movieInfoObj.addProperty("movie_title", movieTitle);
-            movieInfoObj.addProperty("movie_year", movieYear);
-            movieInfoObj.addProperty("movie_director", movieDirector);
+                // Convert row data into strings
+                String movieId = rs.getString("id");
+                String movieTitle = rs.getString("title");
+                String movieYear = rs.getString("year");
+                String movieDirector = rs.getString("director");
+                String rating = rs.getString("rating");
 
-            // Create array to store star objects
-            JsonArray starsArray = new JsonArray();
+                // Add data as properties of the object
+                movieObj.addProperty("movie_title", movieTitle);
+                movieObj.addProperty("movie_year", movieYear);
+                movieObj.addProperty("movie_director", movieDirector);
+                movieObj.addProperty("rating", rating);
 
-            // Iterate through each row of rs
-            do {
-                // Create a JsonObject based on the data we retrieve from rs
-                JsonObject starObject = new JsonObject();
-                String starId = rs.getString("starId");
-                String starName = rs.getString("name");
-                starObject.addProperty("star_id", starId);
-                starObject.addProperty("star_name", starName);
+                JsonArray genreArray = new JsonArray();
+                statement = conn.prepareStatement(genre_query);
+                statement.setString(1, movieId);
+                ResultSet genre_rs = statement.executeQuery();
 
-                // Add star object to the array
-                starsArray.add(starObject);
-            } while (rs.next());
+                while(genre_rs.next()){
+                    String genre = genre_rs.getString("id");
+                    genreArray.add(genre);
+                }
 
-            // Add stars to movie object
-            movieInfoObj.add("stars", starsArray);
+                movieObj.add("genres", genreArray);
+                genre_rs.close();
 
-            // Declare statement for genre_query
-            statement = conn.prepareStatement(genre_query);
-            statement.setString(1, id);
-            rs = statement.executeQuery();
+                JsonArray starsArray = new JsonArray();
+                statement = conn.prepareStatement(stars_query);
+                statement.setString(1, movieId);
+                ResultSet stars_rs = statement.executeQuery();
 
-            // Create array to store genre objects
-            JsonArray genreArray = new JsonArray();
+                while(stars_rs.next()){
+                    JsonObject starObj = new JsonObject();
+                    String star_id = stars_rs.getString("id");
+                    String star_name = stars_rs.getString("id");
 
-            // Iterate through each row of rs
-            while (rs.next()) {
-                // Create a JsonObject based on the data we retrieve from rs
-                JsonObject jsonObject = new JsonObject();
-                String genreName = rs.getString("name");
-                jsonObject.addProperty("genre_name", genreName);
+                    starObj.addProperty("star_id", star_id);
+                    starObj.addProperty("star_name", star_name);
+                    starsArray.add(starObj);
+                }
 
-                // Add genre object to array
-                genreArray.add(jsonObject);
+                movieObj.add("stars", starsArray);
+                stars_rs.close();
+
+                movieArray.add(movieObj);
             }
-
-            // Add genres to movie object
-            movieInfoObj.add("genres", genreArray);
-
-            // Declare statement for rating_query
-            statement = conn.prepareStatement(rating_query);
-            statement.setString(1, id);
-            rs = statement.executeQuery();
-
-            // Create a JsonObject based on the data we retrieve from rs
-            rs.next();
-            String rating = rs.getString("rating");
-            movieInfoObj.addProperty("rating", rating);
 
             // Close queries
             rs.close();
             statement.close();
 
             // Write JSON string to output
-            out.write(movieInfoObj.toString());
+            out.write(movieArray.toString());
             // Set response status to 200 (OK)
             response.setStatus(200);
 
