@@ -135,8 +135,9 @@ public class SingleMovieServlet extends HttpServlet {
             rs = statement.executeQuery();
 
             // Create a JsonObject based on the data we retrieve from rs
-            rs.next();
-            String rating = rs.getString("rating");
+            String rating = "N/A";
+            if(rs.next())
+                rating = rs.getString("rating");
             movieInfoObj.addProperty("rating", rating);
 
             // Close queries
