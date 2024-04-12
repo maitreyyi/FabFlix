@@ -76,6 +76,9 @@ public class SingleStarServlet extends HttpServlet {
             String starName = rs.getString("name");
             String starBirth = rs.getString("birthYear");
 
+            if (starBirth == null){
+                starBirth = "N/A";
+            }
             // Add data as properties of the object
             starInfoObj.addProperty("star_name", starName);
             starInfoObj.addProperty("star_birth", starBirth);
