@@ -38,13 +38,6 @@ public class MovieListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         response.setContentType("application/json"); // Response mime type
-
-        // Retrieve parameter id from url request.
-        String id = request.getParameter("id");
-
-        // The log message can be found in localhost log
-        request.getServletContext().log("getting id: " + id);
-
         // Output stream to STDOUT
         PrintWriter out = response.getWriter();
 
@@ -52,11 +45,13 @@ public class MovieListServlet extends HttpServlet {
         try (Connection conn = dataSource.getConnection()) {
             // Get a connection from dataSource
 
-            // Get stars and movie information
+            // Get stars and movie information (hyperlinks)
             // Construct a queries with parameter represented by "?"
-            String movie_query = "SELECT m.title, m.year, m.director, r.rating " +
-                    "from movies as m, ratings as r " +
-                    "where r.movieId = ?";
+            String movie_query = "SELECT m.id, m.title, m.year, m.director, r.rating " +
+                    "FROM movies as m, ratings as r " +
+                    "WHERE r.movieId = m.id " +
+                    "ORDER BY rating DESC "+
+                    "LIMIT 20";
 
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
@@ -69,18 +64,13 @@ public class MovieListServlet extends HttpServlet {
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
-
-            // Set the parameter represented by "?" in the query to the id we get from url,
-            // num 1 indicates the first "?" in the query
-            statement.setString(1, id);
-
             // Perform the query
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();
 
-            while(rs.next())
-            {
+            //set up movies objects
+            while(rs.next()) {
                 JsonObject movieObj = new JsonObject();
 
                 // Convert row data into strings
@@ -91,10 +81,13 @@ public class MovieListServlet extends HttpServlet {
                 String rating = rs.getString("rating");
 
                 // Add data as properties of the object
+                movieObj.addProperty("movie_id", movieId);
                 movieObj.addProperty("movie_title", movieTitle);
                 movieObj.addProperty("movie_year", movieYear);
                 movieObj.addProperty("movie_director", movieDirector);
                 movieObj.addProperty("rating", rating);
+
+                movieArray.add(movieObj);
 
                 JsonArray genreArray = new JsonArray();
                 statement = conn.prepareStatement(genre_query);
@@ -102,7 +95,7 @@ public class MovieListServlet extends HttpServlet {
                 ResultSet genre_rs = statement.executeQuery();
 
                 while(genre_rs.next()){
-                    String genre = genre_rs.getString("id");
+                    String genre = genre_rs.getString("name");
                     genreArray.add(genre);
                 }
 
@@ -116,8 +109,8 @@ public class MovieListServlet extends HttpServlet {
 
                 while(stars_rs.next()){
                     JsonObject starObj = new JsonObject();
-                    String star_id = stars_rs.getString("id");
-                    String star_name = stars_rs.getString("id");
+                    String star_id = stars_rs.getString("starId");
+                    String star_name = stars_rs.getString("name");
 
                     starObj.addProperty("star_id", star_id);
                     starObj.addProperty("star_name", star_name);
@@ -126,8 +119,6 @@ public class MovieListServlet extends HttpServlet {
 
                 movieObj.add("stars", starsArray);
                 stars_rs.close();
-
-                movieArray.add(movieObj);
             }
 
             // Close queries
