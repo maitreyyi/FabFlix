@@ -45,7 +45,7 @@ function handleResult(resultData) {
                 break;
             }
             rowHTML += resultData[i]["genres"][j];
-            if (j + 1 < 3)
+            if (j + 1 < 3 && j + 1 < resultData[i]["genres"].length)
                 rowHTML += ", ";
         }
         rowHTML += "</th>";
@@ -55,7 +55,7 @@ function handleResult(resultData) {
         for (let j = 0; j < 3; j++) {
             rowHTML += '<a href="single-star.html?id=' + resultData[i]["stars"][j]['star_id'] + '">'
                 + resultData[i]["stars"][j]["star_name"] +'</a>';
-            if (j + 1 < 3)
+            if (j + 1 < 3 && j + 1 < resultData[i]["stars"].length)
                 rowHTML += ", ";
         }
         rowHTML += "</th></tr>";
