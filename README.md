@@ -12,8 +12,8 @@
 
 #### Maitreyi:
 
--Worked on the SQL table creations for 'moviedb' with Sharon
--Worked on Star Servlet and HTML and JavaScript file related to single-star pages
--Worked on displaying top 20 movies ranked by ratings in HTML and Java 
--Worked on enforcing jump requirement between pages
--Worked on modifying SQL queries and JavaScript files for top 20 movies with Sharon
+1. Worked on the SQL table creations for 'moviedb' with Sharon
+2. Worked on Star Servlet and HTML and JavaScript file related to single-star pages
+3. Worked on displaying top 20 movies ranked by ratings in HTML and Java
+4. Worked on enforcing jump requirement between pages
+5. Worked on modifying SQL queries and JavaScript files for top 20 movies with Sharon
