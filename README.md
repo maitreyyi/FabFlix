@@ -7,10 +7,10 @@
 
 ## Group Member Contributions: 
 
-# Sharon:
+## Sharon:
 
 
-# Maitreyi:
+## Maitreyi:
 
 -Worked on the SQL table creations for 'moviedb' with Sharon
 -Worked on Star Servlet and HTML and JavaScript file related to single-star pages
