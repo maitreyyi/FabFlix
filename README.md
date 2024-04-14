@@ -11,7 +11,11 @@
 ### Group Member Contributions: 
 
 #### Sharon:
-
+1. Worked on the SQL table creations for 'moviedb' with Maitreyi
+2. Worked on Movie Servlet and HTML and JavaScript file related to single-movie pages
+3. Worked on backend of movie list in Java Servlet
+4. Worked on query to HTML of movie list in javascript
+5. Set up AWS instance for demonstration
 
 #### Maitreyi:
 
