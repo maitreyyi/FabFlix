@@ -2,7 +2,12 @@
  * Handles the data returned by the API, read the jsonObject and populate data into html elements
  * @param resultData jsonObject
  */
+function search(query){
 
+}
+function displayResults(results){
+
+}
 function handleResult(resultData) {
 
     console.log("handleResult: populating genre hyperlinks");
@@ -46,7 +51,12 @@ function handleResult(resultData) {
     alphanumericLink.append("<h5>"+ content + "</h5>");
 
 }
-
+// Event listener for input changes
+document.getElementById("search_query").addEventListener("input", function(event) {
+    const query = event.target.value.trim();
+    const results = search(query);
+    displayResults(results);
+});
 /**
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
