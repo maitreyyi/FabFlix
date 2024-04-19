@@ -56,7 +56,8 @@ public class SingleStarServlet extends HttpServlet {
             // Construct a queries with parameter represented by "?"
             String movies_query = "SELECT s.name, s.id, s.birthYear, m.title, sim.movieId " +
                     "FROM stars as s, stars_in_movies as sim, movies as m " +
-                    "WHERE s.id = sim.starId and sim.movieId = m.id and s.id = ?";
+                    "WHERE s.id = sim.starId and sim.movieId = m.id and s.id = ? " +
+                    "ORDER BY m.year DESC, m.title";
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movies_query);
