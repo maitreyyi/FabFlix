@@ -44,8 +44,8 @@ function handleResult(resultData) {
             if(resultData[i]["genres"][j] == null){
                 break;
             }
-            rowHTML += resultData[i]["genres"][j];
-
+            rowHTML += '<a href="movie-list.html?genre=' + resultData[i]["genres"][j]["genre_id"] +'">' +
+                        resultData[i]["genres"][j]["genre_name"] + '</a>';
             if (resultData[i]["genres"][j+1] != null) {
                 rowHTML += ", ";
             }

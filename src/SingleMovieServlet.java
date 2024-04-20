@@ -56,10 +56,12 @@ public class SingleMovieServlet extends HttpServlet {
             // Construct a queries with parameter represented by "?"
             String stars_query = "SELECT m.title, m.year, m.director, sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim, movies as m " +
-                    "where m.id = sim.movieId and sim.starId = s.id and m.id = ?";
+                    "where m.id = sim.movieId and sim.starId = s.id and m.id = ? " +
+                    "group by sim.starId order by count(sim.movieId)";
 
-            String genre_query = "SELECT g.name from genres as g, genres_in_movies as gim " +
-                    "where gim.genreId = g.id and gim.movieId = ?";
+            String genre_query = "SELECT g.id, g.name from genres as g, genres_in_movies as gim " +
+                    "where gim.genreId = g.id and gim.movieId = ?" +
+                    "order by g.name asc";
 
             String rating_query = "SELECT rating from ratings " +
                     "where movieId = ?";
@@ -119,7 +121,9 @@ public class SingleMovieServlet extends HttpServlet {
             while (rs.next()) {
                 // Create a JsonObject based on the data we retrieve from rs
                 JsonObject jsonObject = new JsonObject();
+                String genreId = rs.getString("id");
                 String genreName = rs.getString("name");
+                jsonObject.addProperty("genre_id", genreId);
                 jsonObject.addProperty("genre_name", genreName);
 
                 // Add genre object to array

@@ -56,10 +56,12 @@ public class MovieListServlet extends HttpServlet {
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
                     "where sim.starId = s.id and sim.movieId = ? " +
+                    "group by sim.starId order by count(sim.movieId)" +
                     "limit 3";
 
-            String genre_query = "SELECT g.name from genres as g, genres_in_movies as gim " +
+            String genre_query = "SELECT g.id, g.name from genres as g, genres_in_movies as gim " +
                     "where gim.genreId = g.id and gim.movieId = ? " +
+                    "order by g.name asc " +
                     "limit 3";
 
             // Declare statement for stars_query
@@ -95,7 +97,13 @@ public class MovieListServlet extends HttpServlet {
                 ResultSet genre_rs = statement.executeQuery();
 
                 while(genre_rs.next()){
-                    String genre = genre_rs.getString("name");
+                    JsonObject genre = new JsonObject();
+
+                    String genreId = genre_rs.getString("id");
+                    String genreName = genre_rs.getString("name");
+                    genre.addProperty("genre_id", genreId);
+                    genre.addProperty("genre_name", genreName);
+
                     genreArray.add(genre);
                 }
 
