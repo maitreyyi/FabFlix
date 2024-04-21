@@ -50,7 +50,7 @@ const sendSearch = searchData => {
     let queryString = '';
     for (const key in searchData) {
         if (searchData.hasOwnProperty(key)) {
-            if (queryString !== '') {
+            if (queryString.length > 0) {
                 queryString += '&';
             }
             queryString += key + '=' + encodeURIComponent(searchData[key]);
