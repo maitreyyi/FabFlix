@@ -66,6 +66,26 @@ function handleResult(resultData) {
     }
 }
 
+const handleSearch = async ()=> {
+    //console.log('handling search');
+    data = await fetch(
+        `api/search?${params.toString()}`,
+        {
+            method:"GET",
+            headers:{
+                'Content-Type': 'application/json'
+            }
+        }
+    )
+    console.log(data);
+    return data;
+}
+
+window.onload = async event => {
+    params = (new URL(document.location)).searchParams;
+    handleSearch();
+    console.log('search handled');
+}
 /**
  * Once this .js is loaded, following scripts will be executed by the browser\
  */

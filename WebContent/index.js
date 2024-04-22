@@ -56,7 +56,7 @@ const sendSearch = searchData => {
             queryString += key + '=' + encodeURIComponent(searchData[key]);
         }
     }
-    window.location = `movieList.html?${queryString}`
+    window.location = `movie-list.html?${queryString}`
 }
 
 const form = document.getElementById("search");

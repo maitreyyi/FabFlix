@@ -26,7 +26,7 @@ public class SearchServlet extends HttpServlet {
 
     public void init(ServletConfig config) {
         try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedbexample");
+            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
         } catch (NamingException e) {
             e.printStackTrace();
         }
@@ -38,6 +38,16 @@ public class SearchServlet extends HttpServlet {
 
         response.setContentType("application/json");    // Response mime type
 
+        // Retrieve parameter id from url request.
+        String title = (request.getParameter("title") != null) ? request.getParameter("title") : "%";
+        String year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
+        String director = (request.getParameter("director") != null) ? request.getParameter("director") : "%";
+        String star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name") : "%";
+
+        //console.log(title);
+
+        // The log message can be found in localhost log
+        request.getServletContext().log("getting parameters: " + title);
         // Output stream to STDOUT
         PrintWriter out = response.getWriter();
 
@@ -47,7 +57,9 @@ public class SearchServlet extends HttpServlet {
             Connection dbCon = dataSource.getConnection();
             Statement statement = dbCon.createStatement();
 
-            //pull out the form data and construct url
+            //substring matching and filtering
+
+            //find matching results or redirect to movielistservlet
 
             // Close all structures
             //rs.close();
