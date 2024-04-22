@@ -38,6 +38,11 @@ public class MovieListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         response.setContentType("application/json"); // Response mime type
+
+        // Retrieve parameter genre from url request.
+        String genreParam = request.getParameter("genre");
+        request.getServletContext().log("getting genre: " + genreParam);
+
         // Output stream to STDOUT
         PrintWriter out = response.getWriter();
 
@@ -48,10 +53,21 @@ public class MovieListServlet extends HttpServlet {
             // Get stars and movie information (hyperlinks)
             // Construct a queries with parameter represented by "?"
             String movie_query = "SELECT m.id, m.title, m.year, m.director, r.rating " +
-                    "FROM movies as m, ratings as r " +
-                    "WHERE r.movieId = m.id " +
-                    "ORDER BY rating DESC "+
-                    "LIMIT 20";
+                    "FROM movies as m, ratings as r ";
+            if (genreParam != null) {
+                // If there is a genre parameter
+                movie_query += ", genres_in_movies as gim " +
+                        "WHERE r.movieId = m.id and gim.movieId = m.id and gim.genreId = ? " +
+                        "ORDER BY rating DESC " +
+                        "LIMIT 20";
+            }
+            else {
+                // If there is no parameter
+                movie_query += "WHERE r.movieId = m.id " +
+                        "ORDER BY rating DESC " +
+                        "LIMIT 20";
+
+            }
 
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
@@ -67,6 +83,11 @@ public class MovieListServlet extends HttpServlet {
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
             // Perform the query
+            int index = 1;
+            if (genreParam != null) {
+                statement.setInt(index, Integer.parseInt(genreParam));
+                index++;
+            }
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();

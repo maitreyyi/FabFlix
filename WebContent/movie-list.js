@@ -69,12 +69,21 @@ function handleResult(resultData) {
 /**
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
+// Get genre parameter from URL
+let genreId = getParameterByName('genre');
+// Initialize ajax url
+let url = "api/movie-list?";
+let index = 0; // to count parameters
+if (genreId) {
+    // If genre parameter exists, add it to the url
+    url += "genre=" + genreId;
+}
 
 
 // Makes the HTTP GET request and registers on success callback function handleResult
 jQuery.ajax({
     dataType: "json",  // Setting return data type
     method: "GET",// Setting request method
-    url: "api/movie-list", // Setting request url,
+    url: url, // Setting request url,
     success: (resultData) => handleResult(resultData) // Setting callback function to handle data returned successfully by the SingleStarServlet
 });
