@@ -25,6 +25,7 @@ function getParameterByName(target) {
  */
 
 function handleResult(resultData) {
+    console.log(resultData);
     let moviesTableBodyElement = jQuery("#movie_table_body");
 
     console.log("handleResult: populating movie table from resultData");
@@ -65,28 +66,9 @@ function handleResult(resultData) {
         moviesTableBodyElement.append(rowHTML);
     }
 }
-
-const handleSearch = async ()=> {
-    //console.log('handling search');
-    data = await fetch(
-        `api/search?${params.toString()}`,
-        {
-            method:"GET",
-            headers:{
-                'Content-Type': 'application/json'
-            }
-        }
-    )
-    console.log(data);
-    return data;
-}
-
-window.onload = async event => {
-    params = (new URL(document.location)).searchParams;
-    handleSearch();
-    console.log('search handled');
-}
-/**
+const params = (new URL(document.location)).searchParams;
+const movie_url= `api/movie-list?${params.toString()}`;
+/*
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
 
@@ -95,6 +77,6 @@ window.onload = async event => {
 jQuery.ajax({
     dataType: "json",  // Setting return data type
     method: "GET",// Setting request method
-    url: "api/movie-list", // Setting request url,
+    url: movie_url, // Setting request url,
     success: (resultData) => handleResult(resultData) // Setting callback function to handle data returned successfully by the SingleStarServlet
 });

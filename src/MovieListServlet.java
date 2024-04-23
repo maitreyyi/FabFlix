@@ -19,7 +19,6 @@ import java.sql.ResultSet;
 @WebServlet(name = "MovieListServlet", urlPatterns  = "/api/movie-list")
 public class MovieListServlet extends HttpServlet {
     private static final long serialVersionUID = 2L;
-
     // Create a dataSource which registered in web.xml
     private DataSource dataSource;
 
@@ -39,6 +38,14 @@ public class MovieListServlet extends HttpServlet {
 
         response.setContentType("application/json"); // Response mime type
         // Output stream to STDOUT
+        String title = (request.getParameter("title") != null) ?  request.getParameter("title") : "%";
+        String year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
+        String director = (request.getParameter("director") != null) ? request.getParameter("director")  : "%";
+        String star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name")  : "%";
+
+        // The log message can be found in localhost log
+        request.getServletContext().log("getting parameters: " + title);
+
         PrintWriter out = response.getWriter();
 
         // Get a connection from dataSource and let resource manager close the connection after usage.
@@ -47,10 +54,13 @@ public class MovieListServlet extends HttpServlet {
 
             // Get stars and movie information (hyperlinks)
             // Construct a queries with parameter represented by "?"
-            String movie_query = "SELECT m.id, m.title, m.year, m.director, r.rating " +
-                    "FROM movies as m, ratings as r " +
-                    "WHERE r.movieId = m.id " +
-                    "ORDER BY rating DESC "+
+            String movie_query = "SELECT DISTINCT m.id, m.title, m.year, m.director, r.rating " +
+                    "FROM movies as m " +
+                    "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
+                    "JOIN stars AS s ON sim.starId = s.id " +
+                    "JOIN ratings AS r ON m.id = r.movieId " +
+                    "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? " +
+                    "ORDER BY rating DESC " +
                     "LIMIT 20";
 
             String stars_query = "SELECT sim.starId, s.name " +
@@ -64,6 +74,15 @@ public class MovieListServlet extends HttpServlet {
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
+            //check if title LIKE '%%'still works how we intended it to
+            title = '%' + title + '%';
+            director = '%' + director + '%';
+            star_name = '%' + star_name + '%';
+            //replacing ? in movie query string
+            statement.setString(1, title);
+            statement.setString(2, director);
+            statement.setString(3, star_name);
+            statement.setString(4, year);
             // Perform the query
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
@@ -110,10 +129,10 @@ public class MovieListServlet extends HttpServlet {
                 while(stars_rs.next()){
                     JsonObject starObj = new JsonObject();
                     String star_id = stars_rs.getString("starId");
-                    String star_name = stars_rs.getString("name");
+                    String starName = stars_rs.getString("name");
 
                     starObj.addProperty("star_id", star_id);
-                    starObj.addProperty("star_name", star_name);
+                    starObj.addProperty("star_name", starName);
                     starsArray.add(starObj);
                 }
 
