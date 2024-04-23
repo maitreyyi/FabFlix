@@ -40,10 +40,7 @@ function handleResult(resultData) {
 
         rowHTML += "<th>";
         // Concatenate the html tags with resultData jsonObject to create table rows
-        for (let j = 0; j < 3; j++) {
-            if(resultData[i]["genres"][j] == null){
-                break;
-            }
+        for (let j = 0; j < Math.min(3,resultData[i]["genres"].length); j++) {
             rowHTML += '<a href="movie-list.html?genre=' + resultData[i]["genres"][j]["genre_id"] +'">' +
                         resultData[i]["genres"][j]["genre_name"] + '</a>';
             if (resultData[i]["genres"][j+1] != null) {
@@ -54,7 +51,7 @@ function handleResult(resultData) {
 
         rowHTML += "<th>";
         // Concatenate the html tags with resultData jsonObject to create table rows
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < Math.min(3, resultData[i]["stars"].length); j++) {
             rowHTML += '<a href="single-star.html?id=' + resultData[i]["stars"][j]['star_id'] + '">'
                 + resultData[i]["stars"][j]["star_name"] +'</a>';
             if (j < 2) {
@@ -69,14 +66,25 @@ function handleResult(resultData) {
 /**
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
-// Get genre parameter from URL
+// Get parameters from URL
 let genreId = getParameterByName('genre');
+let startChar = getParameterByName('start');
+
 // Initialize ajax url
 let url = "api/movie-list?";
 let index = 0; // to count parameters
+
 if (genreId) {
-    // If genre parameter exists, add it to the url
+    // If genre parameter exists, to url
     url += "genre=" + genreId;
+    index++;
+}
+else if (startChar) {
+    // If start parameter exists, add to url
+    if (index !== 0){
+        url += "&";
+    }
+    url += "start=" + startChar;
 }
 
 

@@ -42,6 +42,12 @@ public class MovieListServlet extends HttpServlet {
         // Retrieve parameter genre from url request.
         String genreParam = request.getParameter("genre");
         request.getServletContext().log("getting genre: " + genreParam);
+        String startParam = request.getParameter("start");
+        request.getServletContext().log("getting start: " + startParam);
+        String firstSort = request.getParameter("firstSort");
+        request.getServletContext().log("getting start: " + firstSort);
+        String secondSort = request.getParameter("secondSort");
+        request.getServletContext().log("getting start: " + secondSort);
 
         // Output stream to STDOUT
         PrintWriter out = response.getWriter();
@@ -57,17 +63,23 @@ public class MovieListServlet extends HttpServlet {
             if (genreParam != null) {
                 // If there is a genre parameter
                 movie_query += ", genres_in_movies as gim " +
-                        "WHERE r.movieId = m.id and gim.movieId = m.id and gim.genreId = ? " +
-                        "ORDER BY rating DESC " +
-                        "LIMIT 20";
+                        "WHERE r.movieId = m.id and gim.movieId = m.id and gim.genreId = ? ";
+            }
+            else if (startParam != null) {
+                if (startParam.equals("*")) {
+                    startParam = "[^a-zA-Z0-9]";
+                    movie_query += "WHERE r.movieId = m.id and m.title not like ? ";
+                }
+                else {
+                    movie_query += "WHERE r.movieId = m.id and m.title like ? ";
+                }
             }
             else {
                 // If there is no parameter
-                movie_query += "WHERE r.movieId = m.id " +
-                        "ORDER BY rating DESC " +
-                        "LIMIT 20";
+                movie_query += "WHERE r.movieId = m.id ";
 
             }
+            movie_query += "ORDER BY r.rating LIMIT 20";
 
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
@@ -88,6 +100,11 @@ public class MovieListServlet extends HttpServlet {
                 statement.setInt(index, Integer.parseInt(genreParam));
                 index++;
             }
+            if (startParam != null) {
+                statement.setString(index, startParam + "%");
+                index++;
+            }
+            System.out.println(movie_query);
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();
