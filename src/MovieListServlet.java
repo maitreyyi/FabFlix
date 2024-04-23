@@ -60,8 +60,7 @@ public class MovieListServlet extends HttpServlet {
                     "JOIN stars AS s ON sim.starId = s.id " +
                     "JOIN ratings AS r ON m.id = r.movieId " +
                     "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? " +
-                    "ORDER BY rating DESC " +
-                    "LIMIT 20";
+                    "ORDER BY rating DESC ";
 
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
