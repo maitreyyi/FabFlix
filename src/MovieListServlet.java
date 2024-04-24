@@ -44,10 +44,27 @@ public class MovieListServlet extends HttpServlet {
         request.getServletContext().log("getting genre: " + genreParam);
         String startParam = request.getParameter("start");
         request.getServletContext().log("getting start: " + startParam);
+
+        String titleParam = request.getParameter("title");
+        request.getServletContext().log("getting start: " + titleParam);
+        String yearParam = request.getParameter("year");
+        request.getServletContext().log("getting start: " + yearParam);
+        String directorParam = request.getParameter("director");
+        request.getServletContext().log("getting start: " + directorParam);
+        String starParam = request.getParameter("starName"); // check name
+        request.getServletContext().log("getting start: " + starParam);
+
         String firstSort = request.getParameter("firstSort");
         request.getServletContext().log("getting start: " + firstSort);
         String secondSort = request.getParameter("secondSort");
         request.getServletContext().log("getting start: " + secondSort);
+
+        String pageParam = request.getParameter("page");
+        request.getServletContext().log("getting genre: " + pageParam);
+        String limitParam = request.getParameter("limit");
+        request.getServletContext().log("getting start: " + limitParam);
+
+        int offset = Integer.parseInt(pageParam) * Integer.parseInt(limitParam);
 
         // Output stream to STDOUT
         PrintWriter out = response.getWriter();
@@ -110,7 +127,7 @@ public class MovieListServlet extends HttpServlet {
                     movie_query += "m.title ASC ";
             }
 
-            movie_query += "LIMIT 20";
+            movie_query += "LIMIT ? OFFSET ?";
 
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
@@ -135,7 +152,15 @@ public class MovieListServlet extends HttpServlet {
                 statement.setString(index, startParam + "%");
                 index++;
             }
-            System.out.println(movie_query);
+            if (limitParam != null) {
+                statement.setInt(index, Integer.parseInt(limitParam));
+                index++;
+            }
+            if (pageParam != null) {
+                statement.setInt(index, offset);
+                index++;
+            }
+
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();
