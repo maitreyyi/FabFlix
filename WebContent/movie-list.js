@@ -54,8 +54,10 @@ function handleResult(resultData) {
         rowHTML += "</th>";
 
         rowHTML += "<th>";
+        let stars_num = Object.keys(resultData[i]["stars"]).length;
         // Concatenate the html tags with resultData jsonObject to create table rows
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < stars_num; j++) {
+
             rowHTML += '<a href="single-star.html?id=' + resultData[i]["stars"][j]['star_id'] + '">'
                 + resultData[i]["stars"][j]["star_name"] +'</a>';
             if (j < 2) {

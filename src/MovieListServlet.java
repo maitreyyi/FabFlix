@@ -60,15 +60,19 @@ public class MovieListServlet extends HttpServlet {
                     "JOIN stars AS s ON sim.starId = s.id " +
                     "JOIN ratings AS r ON m.id = r.movieId " +
                     "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? " +
-                    "ORDER BY rating DESC ";
+                    "ORDER BY rating DESC " +
+                    "LIMIT 15";
 
-            String stars_query = "SELECT sim.starId, s.name " +
-                    "from stars as s, stars_in_movies as sim " +
-                    "where sim.starId = s.id and sim.movieId = ? " +
-                    "limit 3";
+            String stars_query = "SELECT s.name, sim.starId " +
+                                 "FROM (SELECT sim.starId FROM stars_in_movies sim WHERE sim.movieId = ? ) as star_list, stars_in_movies sim, stars s " +
+                                 "WHERE star_list.starId = sim.starId and s.id = star_list.starId " +
+                                 "GROUP BY sim.starId " +
+                                 "ORDER BY count(sim.starId) DESC, s.name ASC " +
+                                 "LIMIT 3";
 
             String genre_query = "SELECT g.name from genres as g, genres_in_movies as gim " +
                     "where gim.genreId = g.id and gim.movieId = ? " +
+                    "ORDER BY g.name ASC "+
                     "limit 3";
 
             // Declare statement for stars_query
