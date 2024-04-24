@@ -69,6 +69,8 @@ function handleResult(resultData) {
 // Get parameters from URL
 let genreId = getParameterByName('genre');
 let startChar = getParameterByName('start');
+let firstSort = getParameterByName('firstSort');
+let secondSort = getParameterByName('secondSort');
 
 // Initialize ajax url
 let url = "api/movie-list?";
@@ -85,6 +87,14 @@ else if (startChar) {
         url += "&";
     }
     url += "start=" + startChar;
+}
+if (firstSort) {
+    // If firstSort parameter exists, add to url
+    url += "&firstSort=" + firstSort;
+}
+if (secondSort) {
+    // If secondSort parameter exists, add to url
+    url += "&secondSort=" + firstSort;
 }
 
 

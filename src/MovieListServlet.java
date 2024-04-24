@@ -79,7 +79,38 @@ public class MovieListServlet extends HttpServlet {
                 movie_query += "WHERE r.movieId = m.id ";
 
             }
-            movie_query += "ORDER BY r.rating LIMIT 20";
+
+            // Assign sorting
+            if (firstSort == null || secondSort == null) {
+                // Default sorting
+                movie_query += "ORDER BY m.title DESC, r.rating DESC ";
+            }
+            else if (firstSort.startsWith("title")) {
+                // First sort by title
+                if (firstSort.endsWith("DESC"))
+                    movie_query += "ORDER BY m.title DESC, ";
+                else
+                    movie_query += "ORDER BY m.title ASC, ";
+                // Break ties with rating
+                if (secondSort.endsWith("DESC"))
+                    movie_query += "r.rating DESC ";
+                else
+                    movie_query += "r.rating ASC ";
+            }
+            else {
+                // First sort with rating
+                if (firstSort.endsWith("DESC"))
+                    movie_query += "ORDER BY r.rating DESC, ";
+                else
+                    movie_query += "ORDER BY r.rating ASC, ";
+                // Break ties with title
+                if (secondSort.endsWith("DESC"))
+                    movie_query += "m.title DESC ";
+                else
+                    movie_query += "m.title ASC ";
+            }
+
+            movie_query += "LIMIT 20";
 
             String stars_query = "SELECT sim.starId, s.name " +
                     "from stars as s, stars_in_movies as sim " +
