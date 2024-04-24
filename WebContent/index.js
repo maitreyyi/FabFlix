@@ -2,7 +2,6 @@
  * Handles the data returned by the API, read the jsonObject and populate data into html elements
  * @param resultData jsonObject
  */
-
 function handleResult(resultData) {
 
     console.log("handleResult: populating genre hyperlinks");
@@ -47,11 +46,49 @@ function handleResult(resultData) {
 
 }
 
-/**
- * Once this .js is loaded, following scripts will be executed by the browser\
- */
+const sendSearch = searchData => {
+    let queryString = '';
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`
+}
 
-// Makes the HTTP GET request and registers on success callback function handleResult
+const form = document.getElementById("search");
+const submitButton = form.querySelector("button[type='submit']");
+submitButton.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    const searchData = {}
+
+    //Extract the form data
+    const formData = new FormData(form);
+    const title = formData.get("title");
+    const year = formData.get("year");
+    const director = formData.get("director");
+    const starName = formData.get("star_name");
+
+    if(title && title.length > 0){
+        searchData['title'] = title;
+    }
+    if(year){
+        searchData['year'] = year;
+    }
+    if(director && director.length > 0){
+        searchData['director'] = director;
+    }
+    if(starName && starName.length > 0){
+        searchData['star_name'] = starName;
+    }
+    sendSearch(searchData);
+
+});
+
 jQuery.ajax({
     dataType: "json",  // Setting return data type
     method: "GET",// Setting request method

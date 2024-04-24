@@ -67,6 +67,14 @@ public class MovieListServlet extends HttpServlet {
         int offset = Integer.parseInt(pageParam) * Integer.parseInt(limitParam);
 
         // Output stream to STDOUT
+        String title = (request.getParameter("title") != null) ?  request.getParameter("title") : "%";
+        String year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
+        String director = (request.getParameter("director") != null) ? request.getParameter("director")  : "%";
+        String star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name")  : "%";
+
+        // The log message can be found in localhost log
+        request.getServletContext().log("getting parameters: " + title);
+
         PrintWriter out = response.getWriter();
 
         // Get a connection from dataSource and let resource manager close the connection after usage.
@@ -75,65 +83,21 @@ public class MovieListServlet extends HttpServlet {
 
             // Get stars and movie information (hyperlinks)
             // Construct a queries with parameter represented by "?"
-            String movie_query = "SELECT m.id, m.title, m.year, m.director, r.rating " +
-                    "FROM movies as m, ratings as r ";
-            if (genreParam != null) {
-                // If there is a genre parameter
-                movie_query += ", genres_in_movies as gim " +
-                        "WHERE r.movieId = m.id and gim.movieId = m.id and gim.genreId = ? ";
-            }
-            else if (startParam != null) {
-                if (startParam.equals("*")) {
-                    startParam = "[^a-zA-Z0-9]";
-                    movie_query += "WHERE r.movieId = m.id and m.title not like ? ";
-                }
-                else {
-                    movie_query += "WHERE r.movieId = m.id and m.title like ? ";
-                }
-            }
-            else {
-                // If there is no parameter
-                movie_query += "WHERE r.movieId = m.id ";
+            String movie_query = "SELECT DISTINCT m.id, m.title, m.year, m.director, r.rating " +
+                    "FROM movies as m " +
+                    "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
+                    "JOIN stars AS s ON sim.starId = s.id " +
+                    "JOIN ratings AS r ON m.id = r.movieId " +
+                    "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? " +
+                    "ORDER BY rating DESC " +
+                    "LIMIT 15";
 
-            }
-
-            // Assign sorting
-            if (firstSort == null || secondSort == null) {
-                // Default sorting
-                movie_query += "ORDER BY m.title DESC, r.rating DESC ";
-            }
-            else if (firstSort.startsWith("title")) {
-                // First sort by title
-                if (firstSort.endsWith("DESC"))
-                    movie_query += "ORDER BY m.title DESC, ";
-                else
-                    movie_query += "ORDER BY m.title ASC, ";
-                // Break ties with rating
-                if (secondSort.endsWith("DESC"))
-                    movie_query += "r.rating DESC ";
-                else
-                    movie_query += "r.rating ASC ";
-            }
-            else {
-                // First sort with rating
-                if (firstSort.endsWith("DESC"))
-                    movie_query += "ORDER BY r.rating DESC, ";
-                else
-                    movie_query += "ORDER BY r.rating ASC, ";
-                // Break ties with title
-                if (secondSort.endsWith("DESC"))
-                    movie_query += "m.title DESC ";
-                else
-                    movie_query += "m.title ASC ";
-            }
-
-            movie_query += "LIMIT ? OFFSET ?";
-
-            String stars_query = "SELECT sim.starId, s.name " +
-                    "from stars as s, stars_in_movies as sim " +
-                    "where sim.starId = s.id and sim.movieId = ? " +
-                    "group by sim.starId order by count(sim.movieId)" +
-                    "limit 3";
+            String stars_query = "SELECT s.name, sim.starId " +
+                                 "FROM (SELECT sim.starId FROM stars_in_movies sim WHERE sim.movieId = ? ) as star_list, stars_in_movies sim, stars s " +
+                                 "WHERE star_list.starId = sim.starId and s.id = star_list.starId " +
+                                 "GROUP BY sim.starId " +
+                                 "ORDER BY count(sim.starId) DESC, s.name ASC " +
+                                 "LIMIT 3";
 
             String genre_query = "SELECT g.id, g.name from genres as g, genres_in_movies as gim " +
                     "where gim.genreId = g.id and gim.movieId = ? " +
@@ -142,25 +106,16 @@ public class MovieListServlet extends HttpServlet {
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
+            //check if title LIKE '%%'still works how we intended it to
+            title = '%' + title + '%';
+            director = '%' + director + '%';
+            star_name = '%' + star_name + '%';
+            //replacing ? in movie query string
+            statement.setString(1, title);
+            statement.setString(2, director);
+            statement.setString(3, star_name);
+            statement.setString(4, year);
             // Perform the query
-            int index = 1;
-            if (genreParam != null) {
-                statement.setInt(index, Integer.parseInt(genreParam));
-                index++;
-            }
-            if (startParam != null) {
-                statement.setString(index, startParam + "%");
-                index++;
-            }
-            if (limitParam != null) {
-                statement.setInt(index, Integer.parseInt(limitParam));
-                index++;
-            }
-            if (pageParam != null) {
-                statement.setInt(index, offset);
-                index++;
-            }
-
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();
@@ -212,10 +167,10 @@ public class MovieListServlet extends HttpServlet {
                 while(stars_rs.next()){
                     JsonObject starObj = new JsonObject();
                     String star_id = stars_rs.getString("starId");
-                    String star_name = stars_rs.getString("name");
+                    String starName = stars_rs.getString("name");
 
                     starObj.addProperty("star_id", star_id);
-                    starObj.addProperty("star_name", star_name);
+                    starObj.addProperty("star_name", starName);
                     starsArray.add(starObj);
                 }
 

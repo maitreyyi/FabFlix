@@ -62,46 +62,17 @@ function handleResult(resultData) {
         moviesTableBodyElement.append(rowHTML);
     }
 }
-
-/**
+const params = (new URL(document.location)).searchParams;
+const movie_url= `api/movie-list?${params.toString()}`;
+/*
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
-// Get parameters from URL
-let genreId = getParameterByName('genre');
-let startChar = getParameterByName('start');
-let firstSort = getParameterByName('firstSort');
-let secondSort = getParameterByName('secondSort');
-
-// Initialize ajax url
-let url = "api/movie-list?";
-let index = 0; // to count parameters
-
-if (genreId) {
-    // If genre parameter exists, to url
-    url += "genre=" + genreId;
-    index++;
-}
-else if (startChar) {
-    // If start parameter exists, add to url
-    if (index !== 0){
-        url += "&";
-    }
-    url += "start=" + startChar;
-}
-if (firstSort) {
-    // If firstSort parameter exists, add to url
-    url += "&firstSort=" + firstSort;
-}
-if (secondSort) {
-    // If secondSort parameter exists, add to url
-    url += "&secondSort=" + firstSort;
-}
 
 
 // Makes the HTTP GET request and registers on success callback function handleResult
 jQuery.ajax({
     dataType: "json",  // Setting return data type
     method: "GET",// Setting request method
-    url: url, // Setting request url,
+    url: movie_url, // Setting request url,
     success: (resultData) => handleResult(resultData) // Setting callback function to handle data returned successfully by the SingleStarServlet
 });
