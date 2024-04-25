@@ -17,19 +17,42 @@
         </header>
     </div>
 
-    <div class="mx-auto mt-5" style="width: 80%">
+        <div class="mx-auto mt-5" style="width: 80%">
         <!-- Create first row that contains title, year, director, genres, stars and rating-->
-        <table id=movie_table class="table table-striped table-bordered rounded overflow-hidden">
-            <thead class="table-primary">
-            <tr>
-                <th>Title</th>
-                <th>Year</th>
-                <th>Director</th>
-                <th>Rating</th>
-                <th>Genres</th>
-                <th>Stars</th>
-            </tr>
-            </thead>
+            <form id="sort" class="float-right">
+                <label>Sort by: </label>
+                <select name="ordering">
+                    <option value="titleDESC,ratingDESC">title&#8595, rating&#8595</option>
+                    <option value="titleDESC,ratingASC">title&#8595, rating&#8593</option>
+                    <option value="titleASC,ratingDESC">title&#8593, rating&#8595</option>
+                    <option value="titleASC,ratingASC">title&#8593, rating&#8593</option>
+                    <option value="ratingDESC,titleDESC">rating&#8595, title&#8595</option>
+                    <option value="ratingDESC,titleASC">rating&#8595, title&#8593</option>
+                    <option value="ratingASC,titleDESC">rating&#8593, title&#8595</option>
+                    <option value="ratingASC,titleASC">rating&#8593, title&#8593</option>
+                </select>
+
+                <label>Entries per page: </label>
+                <select name="per-page">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+            <table id=movie_table class="table table-striped table-bordered rounded overflow-hidden">
+                <thead class="table-primary">
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Director</th>
+                    <th>Rating</th>
+                    <th>Genres</th>
+                    <th>Stars</th>
+                </tr>
+                </thead>
 
             <!-- Table body is populated dynamically -->
             <tbody id=movie_table_body></tbody>

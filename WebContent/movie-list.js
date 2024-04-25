@@ -62,6 +62,60 @@ function handleResult(resultData) {
         moviesTableBodyElement.append(rowHTML);
     }
 }
+
+
+const sendSort = searchData => {
+    let queryString = '';
+    const params = (new URL(document.location)).searchParams;
+    for (const key of params.keys()) {
+        if (key !== "page" && !searchData[key]) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(params.get(key));
+        }
+    }
+
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`
+}
+
+const sort = document.getElementById("sort");
+const submitSort = sort.querySelector("button[type='submit']");
+
+submitSort.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    const searchData = {}
+
+    //Extract the form data
+    const formData = new FormData(sort);
+    const sorting = formData.get("ordering");
+    const limit = formData.get("per-page");
+
+    const firstSort = sorting.split(",")[0];
+    const secondSort = sorting.split(",")[1];
+
+    if(firstSort){
+        searchData['firstSort'] = firstSort;
+    }
+    if(secondSort){
+        searchData['secondSort'] = secondSort;
+    }
+    if(limit){
+        searchData['limit'] = limit;
+    }
+    sendSort(searchData);
+
+});
+
 const params = (new URL(document.location)).searchParams;
 const movie_url= `api/movie-list?${params.toString()}`;
 /*
