@@ -55,7 +55,6 @@ public class MovieListServlet extends HttpServlet {
         String page = (request.getParameter("page") != null) ? request.getParameter("page")  : "1";
         String limit = (request.getParameter("limit") != null) ? request.getParameter("limit")  : "10";
         int offset = (Integer.parseInt(page) - 1) * Integer.parseInt(limit);
-        System.out.println(offset);
 
         // The log message can be found in localhost log
         request.getServletContext().log("getting parameters: " + title);
@@ -121,7 +120,7 @@ public class MovieListServlet extends HttpServlet {
             director = '%' + director + '%';
             star_name = '%' + star_name + '%';
 
-            start = (start.equals("*")) ? "^[^a-zA-Z0-9]" : start + "%";
+            String start_adjusted = (start.equals("*")) ? "^[^a-zA-Z0-9]" : start + "%";
 
             //replacing ? in movie query string
             int index = 1;
@@ -129,7 +128,7 @@ public class MovieListServlet extends HttpServlet {
                 statement.setString(index++, genre);
             }
             else if (!start.equals("%")) {
-                statement.setString(index++, start );
+                statement.setString(index++, start_adjusted);
             }
             else {
                 statement.setString(index++, title);
@@ -137,7 +136,6 @@ public class MovieListServlet extends HttpServlet {
                 statement.setString(index++, star_name);
                 statement.setString(index++, year);
             }
-            System.out.print(movie_query);
             statement.setInt(index++, Integer.parseInt(limit));
             statement.setInt(index, offset);
 
