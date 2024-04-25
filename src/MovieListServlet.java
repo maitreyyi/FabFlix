@@ -71,16 +71,27 @@ public class MovieListServlet extends HttpServlet {
                     "FROM movies as m " +
                     "JOIN ratings AS r ON m.id = r.movieId ";
 
+            String count_query = "SELECT count(m.id) " +
+                    "FROM movies as m " +
+                    "JOIN ratings AS r ON m.id = r.movieId ";
+
             if (!genre.equals("%")) {
                 movie_query += "JOIN genres_in_movies AS gim ON m.id = gim.movieId " +
+                        "JOIN genres AS g ON g.id = gim.genreId " +
+                        "WHERE g.id LIKE ? ";
+                count_query += "JOIN genres_in_movies AS gim ON m.id = gim.movieId " +
                         "JOIN genres AS g ON g.id = gim.genreId " +
                         "WHERE g.id LIKE ? ";
             }
             else if (!start.equals("%")) {
                 movie_query += (start.equals("*")) ? "WHERE m.title REGEXP ? " : "WHERE m.title LIKE ? ";
+                count_query += (start.equals("*")) ? "WHERE m.title REGEXP ? " : "WHERE m.title LIKE ? ";
             }
             else {
                 movie_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
+                        "JOIN stars AS s ON sim.starId = s.id " +
+                        "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                count_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
                         "JOIN stars AS s ON sim.starId = s.id " +
                         "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
             }
@@ -115,6 +126,7 @@ public class MovieListServlet extends HttpServlet {
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
+            PreparedStatement count_statement = conn.prepareStatement(count_query);
             //check if title LIKE '%%'still works how we intended it to
             title = '%' + title + '%';
             director = '%' + director + '%';
@@ -125,15 +137,21 @@ public class MovieListServlet extends HttpServlet {
             //replacing ? in movie query string
             int index = 1;
             if (!genre.equals("%")) {
+                count_statement.setString(index, genre);
                 statement.setString(index++, genre);
             }
             else if (!start.equals("%")) {
+                count_statement.setString(index, start_adjusted);
                 statement.setString(index++, start_adjusted);
             }
             else {
+                count_statement.setString(index, title);
                 statement.setString(index++, title);
+                count_statement.setString(index, director);
                 statement.setString(index++, director);
+                count_statement.setString(index, star_name);
                 statement.setString(index++, star_name);
+                count_statement.setString(index, year);
                 statement.setString(index++, year);
             }
             statement.setInt(index++, Integer.parseInt(limit));
@@ -143,6 +161,9 @@ public class MovieListServlet extends HttpServlet {
             ResultSet rs = statement.executeQuery();
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();
+
+            ResultSet count_rs = count_statement.executeQuery();
+            count_rs.next();
 
             //set up movies objects
             while(rs.next()) {
@@ -154,6 +175,7 @@ public class MovieListServlet extends HttpServlet {
                 String movieYear = rs.getString("year");
                 String movieDirector = rs.getString("director");
                 String rating = rs.getString("rating");
+                String count = count_rs.getString("count(m.id)");
 
                 // Add data as properties of the object
                 movieObj.addProperty("movie_id", movieId);
@@ -161,6 +183,7 @@ public class MovieListServlet extends HttpServlet {
                 movieObj.addProperty("movie_year", movieYear);
                 movieObj.addProperty("movie_director", movieDirector);
                 movieObj.addProperty("rating", rating);
+                movieObj.addProperty("count", count);
 
                 movieArray.add(movieObj);
 

@@ -1,3 +1,10 @@
+
+const sort = document.getElementById("sort");
+const submitSort = sort.querySelector("button[type='submit']");
+const prev_page = document.getElementById("prev");
+const next_page = document.getElementById("next");
+
+
 /**
  * Retrieve parameter from request URL, matching by parameter name
  * @param target String
@@ -61,6 +68,19 @@ function handleResult(resultData) {
         rowHTML += "</th></tr>";
         moviesTableBodyElement.append(rowHTML);
     }
+
+    const params = (new URL(document.location)).searchParams;
+    let cur_page = (params.get("page")) ? params.get("page") : "1";
+    let limit = (params.get("limit")) ? params.get("limit") : "10";
+
+    if (resultData.length > 0 && cur_page * limit >= resultData[0]["count"]) {
+        next_page.setAttribute('disabled', '');
+    }
+
+    if (cur_page === "1") {
+        prev_page.setAttribute('disabled', '');
+    }
+
 }
 
 
@@ -87,8 +107,6 @@ const sendSort = searchData => {
     window.location = `movie-list.html?${queryString}`
 }
 
-const sort = document.getElementById("sort");
-const submitSort = sort.querySelector("button[type='submit']");
 
 submitSort.addEventListener("click", function(event) {
     // Prevent the default button click behavior
@@ -114,6 +132,47 @@ submitSort.addEventListener("click", function(event) {
     }
     sendSort(searchData);
 
+});
+
+
+prev_page.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    let queryString = '';
+    const params = (new URL(document.location)).searchParams;
+    let cur_page = (params.get("page")) ? params.get("page") : "1";
+
+    for (const key of params.keys()) {
+        if (key !== "page") {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(params.get(key));
+        }
+    }
+    queryString += "&page" + '=' + encodeURIComponent(parseInt(cur_page) - 1);
+
+    window.location = `movie-list.html?${queryString}`;
+});
+
+next_page.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    let queryString = '';
+    const params = (new URL(document.location)).searchParams;
+    let cur_page = (params.get("page")) ? params.get("page") : "1";
+
+    for (const key of params.keys()) {
+        if (key !== "page") {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(params.get(key));
+        }
+    }
+    queryString += "&page" + '=' + encodeURIComponent(parseInt(cur_page) + 1);
+
+    window.location = `movie-list.html?${queryString}`;
 });
 
 const params = (new URL(document.location)).searchParams;
