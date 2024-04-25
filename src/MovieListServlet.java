@@ -78,7 +78,7 @@ public class MovieListServlet extends HttpServlet {
                         "WHERE g.id LIKE ? ";
             }
             else if (!start.equals("%")) {
-                movie_query += "WHERE m.title LIKE ? ";
+                movie_query += (start.equals("*")) ? "WHERE m.title REGEXP ? " : "WHERE m.title LIKE ? ";
             }
             else {
                 movie_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
@@ -121,8 +121,7 @@ public class MovieListServlet extends HttpServlet {
             director = '%' + director + '%';
             star_name = '%' + star_name + '%';
 
-            if (start.equals("*"))
-                start = "[^a-zA-Z0-9]";
+            start = (start.equals("*")) ? "^[^a-zA-Z0-9]" : start + "%";
 
             //replacing ? in movie query string
             int index = 1;
@@ -130,7 +129,7 @@ public class MovieListServlet extends HttpServlet {
                 statement.setString(index++, genre);
             }
             else if (!start.equals("%")) {
-                statement.setString(index++, start + "%");
+                statement.setString(index++, start );
             }
             else {
                 statement.setString(index++, title);
