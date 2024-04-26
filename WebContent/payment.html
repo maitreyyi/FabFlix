@@ -45,32 +45,36 @@
     </div>
 </header>
 
-<div style="width: 400px; height: 420px" class="position-absolute top-50 start-50 translate-middle border rounded-3 shadow p-5">
-    <h2 class="text-center mt-4">Login to Fablix</h2>
+<div style="width: 800px; height: 600px" class="position-absolute top-50 start-50 translate-middle border rounded-3 shadow p-5">
+    <h2 class="text-center mt-4 pt-1">Payment Details</h2>
     <!-- Set the method to POST to avoid showing the username/password in the URL
          The default action is disabled to allow your own implementation. -->
-    <form id="login_form" method="post" action="#" class="ps-5 pt-3">
-        <label><b>First Name:</b></label>
-        <label>
-            <input name="first_name" placeholder="First Name" type="text">
-        </label>
+    <h4 id="total" class="text-center bg-info-subtle p-3 m-2">Cart Total: $place.holder</h4>
+    <form id="login_form" method="post" action="#" class="px-3 pt-2">
+        <div class="row">
+            <div class="form-group col-md-6">
+                <label for="first_name" class="form-label ms-2"><b>First Name:</b></label>
+                <input id="first_name" class="form-control" name="first_name" placeholder="First Name" type="text">
+            </div>
+            <br>
+            <div class="form-group col-md-6">
+                <label for="last_name" class="form-label ms-2"><b>Last Name:</b></label>
+                <input id="last_name" class="form-control" name="last_name" placeholder="Last Name" type="text">
+            </div>
+        </div>
         <br>
-        <label><b>Last Name:</b></label>
-        <label>
-            <input name="last_name" placeholder="Last Name" type="text">
-        </label>
+
+        <label for="card" class="ms-2"><b>Credit Card Number:</b></label>
+        <input id="card" class="form-control" name="card" placeholder="Credit Card Number" type="password">
         <br>
-        <label><b>Credit Card Number:</b></label>
-        <label>
-            <input name="card" placeholder="Credit Card Number" type="password">
-        </label>
+
+        <label for="expir_date" class="ms-2"><b>Expiration Date:</b></label>
+        <input id="expir_date" class="form-control" name="expir_date" placeholder="Expiration Date" type="date">
         <br>
-        <label><b>Expiration Date:</b></label>
-        <label>
-            <input name="expir_date" placeholder="Expiration Date" type="date">
-        </label>
-        <br>
-        <input type="submit" value="Purchase" class="mt-4">
+
+        <div class="row">
+            <input type="submit" value="Purchase" class="mt-4 mx-2 btn btn-success col">
+        </div>
     </form>
 
     <div id="login_error_message" class="text-center mt-2"></div>
