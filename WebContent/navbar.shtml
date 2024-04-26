@@ -1,0 +1,36 @@
+<header class="justify-content-start py-3 mb-4 border-bottom">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <a href="WEB-INF" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+                    <span class="fs-4"><b>FabFlix</b></span>
+                </a>
+            </div>
+            <div class="col">
+                <!-- Search Bar -->
+                <div class="input-group justify-content-end">
+                    <button class="btn" type="button" id="dropdownButton" data-bs-toggle="dropdown" aria-expanded="false">🔍</button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownButton">
+                        <li>
+                            <form id = "search" class="px-4 py-3">
+                                <div class="mb-3">
+                                    <input name="title" type="text" class="form-control" placeholder="Title">
+                                </div>
+                                <div class="mb-3">
+                                    <input name = "year" type="number" class="form-control" placeholder="Year">
+                                </div>
+                                <div class="mb-3">
+                                    <input name="director" type="text" class="form-control" placeholder="Director">
+                                </div>
+                                <div class="mb-3">
+                                    <input name = "star_name" type="text" class="form-control" placeholder="Star Name">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
