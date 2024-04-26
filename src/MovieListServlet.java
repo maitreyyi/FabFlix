@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Map;
 
 // Declaring a WebServlet called SingleStarServlet, which maps to url "/api/movie-list"
 @WebServlet(name = "MovieListServlet", urlPatterns = "/api/movie-list")
@@ -39,25 +40,76 @@ public class MovieListServlet extends HttpServlet {
 
         response.setContentType("application/json"); // Response mime type
 
-        // Retrieve parameter genre from url request.
+        User user = (User) request.getSession().getAttribute("user");
+        String session = request.getParameter("session");
+        String genre, start, title, year, director, star_name, firstSort, secondSort, page, limit;
 
-        String genre = (request.getParameter("genre") != null) ?  request.getParameter("genre") : "%";
-        String start = (request.getParameter("start") != null) ?  request.getParameter("start") : "%";
+        if (session != null){
+            Map<String, String> parameters = user.getParam();
 
-        String title = (request.getParameter("title") != null) ?  request.getParameter("title") : "%";
-        String year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
-        String director = (request.getParameter("director") != null) ? request.getParameter("director")  : "%";
-        String star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name")  : "%";
+            genre = parameters.get("genre");
+            start = parameters.get("start");
 
-        String firstSort = (request.getParameter("firstSort") != null) ?  request.getParameter("firstSort") : "titleDESC";
-        String secondSort = (request.getParameter("secondSort") != null) ?  request.getParameter("secondSort") : "ratingDESC";
+            title = parameters.get("title");
+            year = parameters.get("year");
+            director = parameters.get("director");
+            star_name = parameters.get("star_name");
 
-        String page = (request.getParameter("page") != null) ? request.getParameter("page")  : "1";
-        String limit = (request.getParameter("limit") != null) ? request.getParameter("limit")  : "10";
+            firstSort = parameters.get("firstSort");
+            secondSort = parameters.get("secondSort");
+
+            page = parameters.get("page");
+            limit = parameters.get("limit");
+
+//            String contextPath = request.getContextPath();
+//            String to_send = contextPath + "/movie-list.html?";
+//            int cur_param = 0;
+//            for (var entry : parameters.entrySet()) {
+//                if (!entry.getValue().equals("%")) {
+//                    if (cur_param != 0){
+//                        to_send += "&";
+//                    }
+//                    to_send += entry.getKey() + "=" + entry.getValue();
+//                    cur_param++;
+//                }
+//            }
+//
+//            System.out.println(to_send);
+//            response.sendRedirect(to_send);
+//            return;
+        }
+        else {
+            // Retrieve parameter genre from url request.
+            genre = (request.getParameter("genre") != null) ? request.getParameter("genre") : "%";
+            start = (request.getParameter("start") != null) ? request.getParameter("start") : "%";
+
+            title = (request.getParameter("title") != null) ? request.getParameter("title") : "%";
+            year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
+            director = (request.getParameter("director") != null) ? request.getParameter("director") : "%";
+            star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name") : "%";
+
+            firstSort = (request.getParameter("firstSort") != null) ? request.getParameter("firstSort") : "titleDESC";
+            secondSort = (request.getParameter("secondSort") != null) ? request.getParameter("secondSort") : "ratingDESC";
+
+            page = (request.getParameter("page") != null) ? request.getParameter("page") : "1";
+            limit = (request.getParameter("limit") != null) ? request.getParameter("limit") : "10";
+        }
         int offset = (Integer.parseInt(page) - 1) * Integer.parseInt(limit);
 
         // The log message can be found in localhost log
         request.getServletContext().log("getting parameters: " + title);
+
+        // Save parameters in session
+        user.addParam("genre", genre);
+        user.addParam("start",start);
+        user.addParam("title",title);
+        user.addParam("year",year);
+        user.addParam("director",director);
+        user.addParam("star_name",star_name);
+        user.addParam("firstSort",firstSort);
+        user.addParam("secondSort",secondSort);
+        user.addParam("page",page);
+        user.addParam("limit",limit);
 
         PrintWriter out = response.getWriter();
 

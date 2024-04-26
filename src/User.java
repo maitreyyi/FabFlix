@@ -8,10 +8,20 @@ import java.util.TreeMap;
 public class User {
 
     private final String username;
-    Map<String, Integer> cart = new TreeMap<>();
+    public Map<String, Integer> cart = new TreeMap<>();
+    public Map<String, String> parameters = new TreeMap<>();
 
     public User(String username) {
         this.username = username;
     }
+
+    public void addParam(String key, String value) {
+        this.parameters.put(key, value);
+    }
+
+    public Map<String, String> getParam() {
+        return this.parameters;
+    }
+
 
 }

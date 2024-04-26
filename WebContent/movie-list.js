@@ -88,7 +88,7 @@ const sendSort = searchData => {
     let queryString = '';
     const params = (new URL(document.location)).searchParams;
     for (const key of params.keys()) {
-        if (key !== "page" && !searchData[key]) {
+        if (key !== "page" && key !== "session" && !searchData[key]) {
             if (queryString.length > 0) {
                 queryString += '&';
             }
@@ -143,7 +143,7 @@ prev_page.addEventListener("click", function(event) {
     let cur_page = (params.get("page")) ? params.get("page") : "1";
 
     for (const key of params.keys()) {
-        if (key !== "page") {
+        if (key !== "page" && key !== "session") {
             if (queryString.length > 0) {
                 queryString += '&';
             }
@@ -163,7 +163,7 @@ next_page.addEventListener("click", function(event) {
     let cur_page = (params.get("page")) ? params.get("page") : "1";
 
     for (const key of params.keys()) {
-        if (key !== "page") {
+        if (key !== "page" && key !== "session") {
             if (queryString.length > 0) {
                 queryString += '&';
             }

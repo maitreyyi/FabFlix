@@ -73,6 +73,13 @@ function handleResult(resultData) {
 
 }
 
+const backButton = document.getElementById("jumpback");
+backButton.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    window.location = `movie-list.html?session=true`
+});
+
 /**
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
