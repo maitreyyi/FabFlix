@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @WebServlet(name = "PurchaseServlet", urlPatterns = "/api/payment")
 public class PurchaseServlet extends HttpServlet {
@@ -40,7 +42,11 @@ public class PurchaseServlet extends HttpServlet {
             String first = request.getParameter("first_name");
             String last = request.getParameter("last_name");
             String card = request.getParameter("card");
-            String expiration = request.getParameter("expir_date");
+
+            SimpleDateFormat converter = new SimpleDateFormat("yyyy-MM-dd");
+            String expr_param = (!request.getParameter("expir_date").isEmpty()) ? request.getParameter("expir_date") : "1000-00-00";
+
+            Date expiration = converter.parse(expr_param);
 
             /* This example only allows username/password to be test/test
             /  in the real project, you should talk to the database to verify username/password
@@ -59,7 +65,9 @@ public class PurchaseServlet extends HttpServlet {
             {
                 String return_first = rs.getString("firstName");
                 String return_last = rs.getString("lastName");
-                Date return_expiration = rs.getDate("expiration"); // Need to import date
+                Date return_expiration = rs.getDate("expiration");
+
+                System.out.println(return_first + ", " + return_last + ", " + return_expiration);
 
                 if (!first.equals(return_first)) // Double-check string comparisons
                 {
@@ -67,7 +75,7 @@ public class PurchaseServlet extends HttpServlet {
                     responseJsonObject.addProperty("status", "fail");
                     // Log to localhost log
                     request.getServletContext().log("Purchase failed");
-                    responseJsonObject.addProperty("message", "incorrect first name");
+                    responseJsonObject.addProperty("message", "Invalid first name");
                 }
                 else if (!last.equals(return_last)) // Double-check string comparisons
                 {
@@ -75,15 +83,15 @@ public class PurchaseServlet extends HttpServlet {
                     responseJsonObject.addProperty("status", "fail");
                     // Log to localhost log
                     request.getServletContext().log("Purchase failed");
-                    responseJsonObject.addProperty("message", "incorrect last name");
+                    responseJsonObject.addProperty("message", "Invalid last name");
                 }
-                else if (!expiration.equals(return_expiration)) // String to date comparison, might need conversion
+                else if (expiration != return_expiration)
                 {
                     // Expiration date is wrong, login fail
                     responseJsonObject.addProperty("status", "fail");
                     // Log to localhost log
                     request.getServletContext().log("Purchase failed");
-                    responseJsonObject.addProperty("message", "incorrect expiration date");
+                    responseJsonObject.addProperty("message", "Invalid expiration date");
                 }
                 else
                 {
@@ -100,7 +108,7 @@ public class PurchaseServlet extends HttpServlet {
                 responseJsonObject.addProperty("status", "fail");
                 // Log to localhost log
                 request.getServletContext().log("Purchase failed");
-                responseJsonObject.addProperty("message", "card " + card + " doesn't exist");
+                responseJsonObject.addProperty("message", "Invalid credit card number");
             }
             statement.close();
             rs.close();
