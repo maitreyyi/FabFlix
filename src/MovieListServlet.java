@@ -14,6 +14,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Map;
+import java.util.Random;
 
 // Declaring a WebServlet called SingleStarServlet, which maps to url "/api/movie-list"
 @WebServlet(name = "MovieListServlet", urlPatterns = "/api/movie-list")
@@ -39,25 +41,76 @@ public class MovieListServlet extends HttpServlet {
 
         response.setContentType("application/json"); // Response mime type
 
-        // Retrieve parameter genre from url request.
+        User user = (User) request.getSession().getAttribute("user");
+        String session = request.getParameter("session");
+        String genre, start, title, year, director, star_name, firstSort, secondSort, page, limit;
 
-        String genre = (request.getParameter("genre") != null) ?  request.getParameter("genre") : "%";
-        String start = (request.getParameter("start") != null) ?  request.getParameter("start") : "%";
+        if (session != null){
+            Map<String, String> parameters = user.getParam();
 
-        String title = (request.getParameter("title") != null) ?  request.getParameter("title") : "%";
-        String year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
-        String director = (request.getParameter("director") != null) ? request.getParameter("director")  : "%";
-        String star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name")  : "%";
+            genre = parameters.get("genre");
+            start = parameters.get("start");
 
-        String firstSort = (request.getParameter("firstSort") != null) ?  request.getParameter("firstSort") : "titleDESC";
-        String secondSort = (request.getParameter("secondSort") != null) ?  request.getParameter("secondSort") : "ratingDESC";
+            title = parameters.get("title");
+            year = parameters.get("year");
+            director = parameters.get("director");
+            star_name = parameters.get("star_name");
 
-        String page = (request.getParameter("page") != null) ? request.getParameter("page")  : "1";
-        String limit = (request.getParameter("limit") != null) ? request.getParameter("limit")  : "10";
+            firstSort = parameters.get("firstSort");
+            secondSort = parameters.get("secondSort");
+
+            page = parameters.get("page");
+            limit = parameters.get("limit");
+
+//            String contextPath = request.getContextPath();
+//            String to_send = contextPath + "/movie-list.html?";
+//            int cur_param = 0;
+//            for (var entry : parameters.entrySet()) {
+//                if (!entry.getValue().equals("%")) {
+//                    if (cur_param != 0){
+//                        to_send += "&";
+//                    }
+//                    to_send += entry.getKey() + "=" + entry.getValue();
+//                    cur_param++;
+//                }
+//            }
+//
+//            System.out.println(to_send);
+//            response.sendRedirect(to_send);
+//            return;
+        }
+        else {
+            // Retrieve parameter genre from url request.
+            genre = (request.getParameter("genre") != null) ? request.getParameter("genre") : "%";
+            start = (request.getParameter("start") != null) ? request.getParameter("start") : "%";
+
+            title = (request.getParameter("title") != null) ? request.getParameter("title") : "%";
+            year = (request.getParameter("year") != null) ? request.getParameter("year") : "%";
+            director = (request.getParameter("director") != null) ? request.getParameter("director") : "%";
+            star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name") : "%";
+
+            firstSort = (request.getParameter("firstSort") != null) ? request.getParameter("firstSort") : "titleDESC";
+            secondSort = (request.getParameter("secondSort") != null) ? request.getParameter("secondSort") : "ratingDESC";
+
+            page = (request.getParameter("page") != null) ? request.getParameter("page") : "1";
+            limit = (request.getParameter("limit") != null) ? request.getParameter("limit") : "10";
+        }
         int offset = (Integer.parseInt(page) - 1) * Integer.parseInt(limit);
 
         // The log message can be found in localhost log
         request.getServletContext().log("getting parameters: " + title);
+
+        // Save parameters in session
+        user.addParam("genre", genre);
+        user.addParam("start",start);
+        user.addParam("title",title);
+        user.addParam("year",year);
+        user.addParam("director",director);
+        user.addParam("star_name",star_name);
+        user.addParam("firstSort",firstSort);
+        user.addParam("secondSort",secondSort);
+        user.addParam("page",page);
+        user.addParam("limit",limit);
 
         PrintWriter out = response.getWriter();
 
@@ -71,16 +124,31 @@ public class MovieListServlet extends HttpServlet {
                     "FROM movies as m " +
                     "JOIN ratings AS r ON m.id = r.movieId ";
 
+            String count_query = "SELECT count(m.id) " +
+                    "FROM movies as m " +
+                    "JOIN ratings AS r ON m.id = r.movieId ";
+
+            String price_query = "INSERT INTO movie_prices (movieId, price) " +
+                                 "SELECT ?, ? " +
+                                 "WHERE ? NOT IN (SELECT movieId FROM movie_prices)";
+
             if (!genre.equals("%")) {
                 movie_query += "JOIN genres_in_movies AS gim ON m.id = gim.movieId " +
+                        "JOIN genres AS g ON g.id = gim.genreId " +
+                        "WHERE g.id LIKE ? ";
+                count_query += "JOIN genres_in_movies AS gim ON m.id = gim.movieId " +
                         "JOIN genres AS g ON g.id = gim.genreId " +
                         "WHERE g.id LIKE ? ";
             }
             else if (!start.equals("%")) {
                 movie_query += (start.equals("*")) ? "WHERE m.title REGEXP ? " : "WHERE m.title LIKE ? ";
+                count_query += (start.equals("*")) ? "WHERE m.title REGEXP ? " : "WHERE m.title LIKE ? ";
             }
             else {
                 movie_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
+                        "JOIN stars AS s ON sim.starId = s.id " +
+                        "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                count_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
                         "JOIN stars AS s ON sim.starId = s.id " +
                         "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
             }
@@ -115,6 +183,8 @@ public class MovieListServlet extends HttpServlet {
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
+            PreparedStatement count_statement = conn.prepareStatement(count_query);
+
             //check if title LIKE '%%'still works how we intended it to
             title = '%' + title + '%';
             director = '%' + director + '%';
@@ -125,15 +195,21 @@ public class MovieListServlet extends HttpServlet {
             //replacing ? in movie query string
             int index = 1;
             if (!genre.equals("%")) {
+                count_statement.setString(index, genre);
                 statement.setString(index++, genre);
             }
             else if (!start.equals("%")) {
+                count_statement.setString(index, start_adjusted);
                 statement.setString(index++, start_adjusted);
             }
             else {
+                count_statement.setString(index, title);
                 statement.setString(index++, title);
+                count_statement.setString(index, director);
                 statement.setString(index++, director);
+                count_statement.setString(index, star_name);
                 statement.setString(index++, star_name);
+                count_statement.setString(index, year);
                 statement.setString(index++, year);
             }
             statement.setInt(index++, Integer.parseInt(limit));
@@ -144,16 +220,25 @@ public class MovieListServlet extends HttpServlet {
             // Declare object for movie information
             JsonArray movieArray = new JsonArray();
 
+            ResultSet count_rs = count_statement.executeQuery();
+            count_rs.next();
+
             //set up movies objects
             while(rs.next()) {
                 JsonObject movieObj = new JsonObject();
-
+                PreparedStatement price_statement = conn.prepareStatement(price_query);
                 // Convert row data into strings
                 String movieId = rs.getString("id");
                 String movieTitle = rs.getString("title");
                 String movieYear = rs.getString("year");
                 String movieDirector = rs.getString("director");
                 String rating = rs.getString("rating");
+                String count = count_rs.getString("count(m.id)");
+
+                Random rand = new Random();
+                int scale = 2;
+                float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
+                String final_price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
 
                 // Add data as properties of the object
                 movieObj.addProperty("movie_id", movieId);
@@ -161,7 +246,16 @@ public class MovieListServlet extends HttpServlet {
                 movieObj.addProperty("movie_year", movieYear);
                 movieObj.addProperty("movie_director", movieDirector);
                 movieObj.addProperty("rating", rating);
+                movieObj.addProperty("count", count);
+                movieObj.addProperty("price",final_price);
 
+                //price query input
+                price_statement.setString(1,movieId);
+                price_statement.setString(2,final_price);
+                price_statement.setString(3,movieId);
+
+                price_statement.executeUpdate();
+                price_statement.close();
                 movieArray.add(movieObj);
 
                 JsonArray genreArray = new JsonArray();

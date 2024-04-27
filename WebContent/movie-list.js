@@ -1,3 +1,10 @@
+
+const sort = document.getElementById("sort");
+const submitSort = sort.querySelector("button[type='submit']");
+const prev_page = document.getElementById("prev");
+const next_page = document.getElementById("next");
+
+
 /**
  * Retrieve parameter from request URL, matching by parameter name
  * @param target String
@@ -33,7 +40,7 @@ function handleResult(resultData) {
     for (let i = 0; i < resultData.length; i++) {
         let rowHTML = "";
         rowHTML += '<tr><th><a href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
-            + resultData[i]["movie_title"] + '</a></th>' +
+            + resultData[i]["movie_title"] + '</a><button class = "add-to-cart" onclick = updateCart(resultData[i]["movie_id"])> Add to cart </button></th>' +
             "<th>" + resultData[i]["movie_year"] + "</th>" +
             "<th>" + resultData[i]["movie_director"] + "</th>" +
             "<th>" + resultData[i]["rating"] + "</th>";
@@ -58,10 +65,120 @@ function handleResult(resultData) {
                 rowHTML += ", ";
             }
         }
+        rowHTML += "<th>" + "$" + resultData[i]["price"] + "</th>";
         rowHTML += "</th></tr>";
         moviesTableBodyElement.append(rowHTML);
     }
+
+    const params = (new URL(document.location)).searchParams;
+    let cur_page = (params.get("page")) ? params.get("page") : "1";
+    let limit = (params.get("limit")) ? params.get("limit") : "10";
+
+    if (resultData.length > 0 && cur_page * limit >= resultData[0]["count"]) {
+        next_page.setAttribute('disabled', '');
+    }
+
+    if (cur_page === "1") {
+        prev_page.setAttribute('disabled', '');
+    }
+
 }
+
+const updateCart = movie_id = {
+    //send data along to shopping servlet (add cart info)
+
+}
+const sendSort = searchData => {
+    let queryString = '';
+    const params = (new URL(document.location)).searchParams;
+    for (const key of params.keys()) {
+        if (key !== "page" && key !== "session" && !searchData[key]) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(params.get(key));
+        }
+    }
+
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`
+}
+
+
+submitSort.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    const searchData = {}
+
+    //Extract the form data
+    const formData = new FormData(sort);
+    const sorting = formData.get("ordering");
+    const limit = formData.get("per-page");
+
+    const firstSort = sorting.split(",")[0];
+    const secondSort = sorting.split(",")[1];
+
+    if(firstSort){
+        searchData['firstSort'] = firstSort;
+    }
+    if(secondSort){
+        searchData['secondSort'] = secondSort;
+    }
+    if(limit){
+        searchData['limit'] = limit;
+    }
+    sendSort(searchData);
+
+});
+
+
+prev_page.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    let queryString = '';
+    const params = (new URL(document.location)).searchParams;
+    let cur_page = (params.get("page")) ? params.get("page") : "1";
+
+    for (const key of params.keys()) {
+        if (key !== "page" && key !== "session") {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(params.get(key));
+        }
+    }
+    queryString += "&page" + '=' + encodeURIComponent(parseInt(cur_page) - 1);
+
+    window.location = `movie-list.html?${queryString}`;
+});
+
+next_page.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    let queryString = '';
+    const params = (new URL(document.location)).searchParams;
+    let cur_page = (params.get("page")) ? params.get("page") : "1";
+
+    for (const key of params.keys()) {
+        if (key !== "page" && key !== "session") {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(params.get(key));
+        }
+    }
+    queryString += "&page" + '=' + encodeURIComponent(parseInt(cur_page) + 1);
+
+    window.location = `movie-list.html?${queryString}`;
+});
+
 const params = (new URL(document.location)).searchParams;
 const movie_url= `api/movie-list?${params.toString()}`;
 /*
