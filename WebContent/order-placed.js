@@ -12,12 +12,13 @@ function handleResult(resultData) {
     // append two html <p> created to the h3 body, which will refresh the page
     for (let i = 0; i < resultData.length; i++) {
         let rowHTML = "";
+        let price = resultData[i]["price"] * resultData[i]["quantity"];
         rowHTML += "<tr><th>" + resultData[i]["salesId"] + "</th>" +
             "<th>" + resultData[i]["title"] + "</th>" +
             "<th>" + resultData[i]["quantity"] + "</th>" +
-            "<th>" + resultData[i]["price"] + "</th></tr>";
+            "<th>" + price + "</th></tr>";
 
-        total += resultData[i]["price"];
+        total += price;
         rowHTML += "</th>";
         salesBodyElement.append(rowHTML);
     }
