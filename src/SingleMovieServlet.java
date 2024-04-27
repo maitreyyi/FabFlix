@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Random;
 
 // Declaring a WebServlet called SingleStarServlet, which maps to url "/api/single-star"
 @WebServlet(name = "SingleMovieServlet", urlPatterns = "/api/single-movie")
@@ -66,18 +67,29 @@ public class SingleMovieServlet extends HttpServlet {
             String rating_query = "SELECT rating from ratings " +
                     "where movieId = ?";
 
-            // Declare statement for stars_query
-            PreparedStatement statement = conn.prepareStatement(stars_query);
+            String price_query = "SELECT price " +
+                                 "FROM movie_prices mp " +
+                                 "WHERE mp.movieId = ?";
 
-            // Set the parameter represented by "?" in the query to the id we get from url,
-            // num 1 indicates the first "?" in the query
+            PreparedStatement price_statement = conn.prepareStatement(price_query);
+            price_statement.setString(1,id);
+            ResultSet price_rs = price_statement.executeQuery();
+            price_rs.next();
+            String price = price_rs.getString("price");
+
+            if(price == null){
+                Random rand = new Random();
+                int scale = 2;
+                float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
+                price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+            }
+
+            PreparedStatement statement = conn.prepareStatement(stars_query);
             statement.setString(1, id);
 
             // Perform the query
             ResultSet rs = statement.executeQuery();
-            // Get first row of data
             rs.next();
-            // Declare object for movie information
             JsonObject movieInfoObj = new JsonObject();
 
             // Convert row data into strings
@@ -89,6 +101,7 @@ public class SingleMovieServlet extends HttpServlet {
             movieInfoObj.addProperty("movie_title", movieTitle);
             movieInfoObj.addProperty("movie_year", movieYear);
             movieInfoObj.addProperty("movie_director", movieDirector);
+            movieInfoObj.addProperty("price", price);
 
             // Create array to store star objects
             JsonArray starsArray = new JsonArray();

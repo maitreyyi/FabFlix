@@ -128,9 +128,11 @@ public class MovieListServlet extends HttpServlet {
                     "FROM movies as m " +
                     "JOIN ratings AS r ON m.id = r.movieId ";
 
-            String price_query = "INSERT INTO movie_prices (movieId, price) " +
-                                 "SELECT ?, ? " +
-                                 "WHERE ? NOT IN (SELECT movieId FROM movie_prices)";
+            String price_query = "SELECT price " +
+                                 "FROM movie_prices mp " +
+                                 "WHERE mp.movieId = ?";
+
+            String insert_price = "INSERT INTO movie_prices VALUES(?, ?)";
 
             if (!genre.equals("%")) {
                 movie_query += "JOIN genres_in_movies AS gim ON m.id = gim.movieId " +
@@ -227,6 +229,7 @@ public class MovieListServlet extends HttpServlet {
             while(rs.next()) {
                 JsonObject movieObj = new JsonObject();
                 PreparedStatement price_statement = conn.prepareStatement(price_query);
+
                 // Convert row data into strings
                 String movieId = rs.getString("id");
                 String movieTitle = rs.getString("title");
@@ -235,10 +238,25 @@ public class MovieListServlet extends HttpServlet {
                 String rating = rs.getString("rating");
                 String count = count_rs.getString("count(m.id)");
 
-                Random rand = new Random();
-                int scale = 2;
-                float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
-                String final_price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+                price_statement.setString(1,movieId);
+
+                ResultSet price_rs = price_statement.executeQuery();
+                price_rs.next();
+                String price = price_rs.getString("price");
+
+                if(price == null){
+                    //calculate new price
+                    Random rand = new Random();
+                    int scale = 2;
+                    float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
+                    price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+
+                    //insert into movie_prices table
+                    PreparedStatement insert_statement = conn.prepareStatement(insert_price);
+                    insert_statement.setString(1,movieId);
+                    insert_statement.setString(2, price);
+                    insert_statement.executeUpdate();
+                }
 
                 // Add data as properties of the object
                 movieObj.addProperty("movie_id", movieId);
@@ -247,14 +265,8 @@ public class MovieListServlet extends HttpServlet {
                 movieObj.addProperty("movie_director", movieDirector);
                 movieObj.addProperty("rating", rating);
                 movieObj.addProperty("count", count);
-                movieObj.addProperty("price",final_price);
+                movieObj.addProperty("price",price);
 
-                //price query input
-                price_statement.setString(1,movieId);
-                price_statement.setString(2,final_price);
-                price_statement.setString(3,movieId);
-
-                price_statement.executeUpdate();
                 price_statement.close();
                 movieArray.add(movieObj);
 
