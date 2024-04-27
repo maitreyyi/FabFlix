@@ -12,15 +12,15 @@ function handleResult(resultData) {
         //price
         rowHTML += "<th>" + "$" + resultData[i]["price"] + "</th>";
         //quantity
-        rowHTML += "<th>" + resultData[i]["quantity"] + "</th>";
+        rowHTML += "<th><button class = 'decreaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> - </button> " + resultData[i]["quantity"] + " <button class = 'increaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> + </button></th>";
 
         rowHTML += "</tr>";
         moviesTableBodyElement.append(rowHTML);
-        total_price += parseFloat(resultData[i]["price"]);
+        total_price += parseFloat(resultData[i]["price"])*parseFloat(resultData[i]["quantity"]);
     }
     let totalPriceElem = jQuery("#total-price");
-    totalPriceElem.append("<p>Total price: $" + total_price.toFixed(2) + "</p>")
-    totalPriceElem.append("<a href = './payment.html' class = 'checkout' >Continue to checkout</a>" );
+    totalPriceElem.append("<h3>Total price: $" + total_price.toFixed(2) + "</h3>")
+    totalPriceElem.append("<a href = './payment.html' class='btn btn-primary btn-lg' role='button' >Continue to checkout</a>" );
 
 }
 //getting cart results
@@ -37,7 +37,60 @@ const getCart = async () => {
     return data.json();
 }
 
+function addCart(movieId) {
+    //send data along to shopping servlet (add cart info)
+    jQuery.ajax({
+        dataType: "json",  // Setting return data type
+        method: "POST",// Setting request method
+        data: {
+            movieId: movieId,
+            add: 'True'
+        },
+        url: 'api/cart', // Setting request url,
+        success: function(response){
+            console.log(response);
+        },
+        error: function(xhr, status, error) {
+            // Handle error response
+            console.log(error);
+        }
+    });
+}
 
+function removeCart(movieId) {
+    //send data along to shopping servlet (add cart info)
+    jQuery.ajax({
+        dataType: "json",  // Setting return data type
+        method: "POST",// Setting request method
+        data: {
+            movieId: movieId,
+            add: 'False'
+        },
+        url: 'api/cart', // Setting request url,
+        success: function(response){
+            console.log(response);
+        },
+        error: function(xhr, status, error) {
+            // Handle error response
+            console.log(error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    $(document).on("click", ".increaseQuantity", function() {
+        var movieId = $(this).data("movie-id");
+        addCart(movieId);
+        location.reload();
+    });
+    $(document).on("click", ".decreaseQuantity", function() {
+        var movieId = $(this).data("movie-id");
+        removeCart(movieId);
+        location.reload();
+    });
+
+
+});
 
 // Makes the HTTP GET request and registers on success callback function handleResult
 jQuery.ajax({

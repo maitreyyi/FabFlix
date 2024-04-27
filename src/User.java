@@ -23,5 +23,32 @@ public class User {
         return this.parameters;
     }
 
+    public Map<String, Integer> getCart() {return this.cart;}
+
+    public void addToCart(String movie_id) {
+        //add item to cart if it doesn't exist, if it exists increment by one
+        Integer quantity = this.cart.get(movie_id);
+        if(quantity== null){
+            this.cart.put(movie_id,1);
+        } else {
+            this.cart.put(movie_id, quantity+1);
+        }
+    }
+
+    public void removeFromCart(String movie_id) {
+        //add item to cart if it doesn't exist, if it exists increment by one
+        Integer quantity = this.cart.get(movie_id);
+        if (quantity != null) {
+            if (quantity == 1) {
+                this.cart.remove(movie_id);
+            } else {
+                this.cart.put(movie_id, quantity - 1);
+            }
+        }
+    }
+    public Map<String, Integer> clearCart() {
+        this.cart.clear();
+        return this.cart;
+    }
 
 }

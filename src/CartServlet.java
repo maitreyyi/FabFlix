@@ -135,21 +135,9 @@ public class CartServlet extends HttpServlet {
             String add = request.getParameter("add");
             //try
             if(add != null && add.equals("True")){
-                if(cart.get(movie_id) == null){
-                    System.out.println("Adding to cart, movieId: " + movie_id);
-                    cart.put(movie_id,1);
-                    System.out.print(cart);
-                } else {
-                    cart.put(movie_id, cart.get(movie_id)+1);
-                }
+                user.addToCart(movie_id);
             } else{
-                if(cart.get(movie_id) != null){
-                    if(cart.get(movie_id) == 1){
-                        cart.remove(movie_id);
-                    } else{
-                        cart.put(movie_id, cart.get(movie_id)-1);
-                    }
-                }
+                user.removeFromCart(movie_id);
             }
 
         } catch (Exception e) {

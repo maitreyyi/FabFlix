@@ -239,12 +239,9 @@ public class MovieListServlet extends HttpServlet {
                 String count = count_rs.getString("count(m.id)");
 
                 price_statement.setString(1,movieId);
-
                 ResultSet price_rs = price_statement.executeQuery();
-                price_rs.next();
-                String price = price_rs.getString("price");
-
-                if(price == null){
+                String price;
+                if(!price_rs.next()){
                     //calculate new price
                     Random rand = new Random();
                     int scale = 2;
@@ -256,6 +253,9 @@ public class MovieListServlet extends HttpServlet {
                     insert_statement.setString(1,movieId);
                     insert_statement.setString(2, price);
                     insert_statement.executeUpdate();
+                }
+                else {
+                    price = price_rs.getString("price");
                 }
 
                 // Add data as properties of the object
