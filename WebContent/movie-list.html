@@ -21,10 +21,10 @@
     <!-- Create first row that contains title, year, director, genres, stars and rating-->
         <form id="sort" class="float-right">
             <label>Sort by: </label>
-            <select name="ordering">
+            <select name="ordering" id="ordering">
+                <option value="titleASC,ratingDESC">title&#8593, rating&#8595</option>
                 <option value="titleDESC,ratingDESC">title&#8595, rating&#8595</option>
                 <option value="titleDESC,ratingASC">title&#8595, rating&#8593</option>
-                <option value="titleASC,ratingDESC">title&#8593, rating&#8595</option>
                 <option value="titleASC,ratingASC">title&#8593, rating&#8593</option>
                 <option value="ratingDESC,titleDESC">rating&#8595, title&#8595</option>
                 <option value="ratingDESC,titleASC">rating&#8595, title&#8593</option>
@@ -33,7 +33,7 @@
             </select>
 
             <label>Entries per page: </label>
-            <select name="per-page">
+            <select name="per-page" id="per-page">
                 <option value="10">10</option>
                 <option value="25">25</option>
                 <option value="50">50</option>

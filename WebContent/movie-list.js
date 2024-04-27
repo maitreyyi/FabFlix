@@ -111,6 +111,8 @@ const sendSort = searchData => {
 submitSort.addEventListener("click", function(event) {
     // Prevent the default button click behavior
     event.preventDefault();
+    localStorage.setItem('sort', document.getElementById("ordering").value)
+    localStorage.setItem('per', document.getElementById("per-page").value)
     const searchData = {}
 
     //Extract the form data
@@ -134,6 +136,13 @@ submitSort.addEventListener("click", function(event) {
 
 });
 
+if (localStorage.getItem('sort')) {
+    document.getElementById('ordering').value = localStorage.getItem('sort');
+}
+
+if (localStorage.getItem('per')) {
+    document.getElementById('per-page').value = localStorage.getItem('per');
+}
 
 prev_page.addEventListener("click", function(event) {
     // Prevent the default button click behavior
