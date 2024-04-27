@@ -88,7 +88,7 @@ public class MovieListServlet extends HttpServlet {
             director = (request.getParameter("director") != null) ? request.getParameter("director") : "%";
             star_name = (request.getParameter("star_name") != null) ? request.getParameter("star_name") : "%";
 
-            firstSort = (request.getParameter("firstSort") != null) ? request.getParameter("firstSort") : "titleDESC";
+            firstSort = (request.getParameter("firstSort") != null) ? request.getParameter("firstSort") : "titleASC";
             secondSort = (request.getParameter("secondSort") != null) ? request.getParameter("secondSort") : "ratingDESC";
 
             page = (request.getParameter("page") != null) ? request.getParameter("page") : "1";
