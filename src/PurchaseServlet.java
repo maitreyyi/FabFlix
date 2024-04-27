@@ -10,11 +10,10 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.Map;
 
 @WebServlet(name = "PurchaseServlet", urlPatterns = "/api/payment")
 public class PurchaseServlet extends HttpServlet {
@@ -42,11 +41,10 @@ public class PurchaseServlet extends HttpServlet {
             String first = request.getParameter("first_name");
             String last = request.getParameter("last_name");
             String card = request.getParameter("card");
-
-            SimpleDateFormat converter = new SimpleDateFormat("yyyy-MM-dd");
-            String expr_param = (!request.getParameter("expir_date").isEmpty()) ? request.getParameter("expir_date") : "1000-00-00";
-
-            Date expiration = converter.parse(expr_param);
+            card = card.substring(0, 4) + " " + card.substring(4, 8) + " " + card.substring(8, 12) + " " + card.substring(12);
+            String expr_param = (!request.getParameter("expir_date").isEmpty()) ? request.getParameter("expir_date") : "1000-01-01";
+            Date expiration = Date.valueOf(expr_param);
+            System.out.println(expiration);
 
             /* This example only allows username/password to be test/test
             /  in the real project, you should talk to the database to verify username/password
@@ -85,7 +83,7 @@ public class PurchaseServlet extends HttpServlet {
                     request.getServletContext().log("Purchase failed");
                     responseJsonObject.addProperty("message", "Invalid last name");
                 }
-                else if (expiration != return_expiration)
+                else if (expiration.compareTo(return_expiration) != 0)
                 {
                     // Expiration date is wrong, login fail
                     responseJsonObject.addProperty("status", "fail");
@@ -97,6 +95,41 @@ public class PurchaseServlet extends HttpServlet {
                 {
                     // Login success:
                     // set this user into the session
+                    System.out.println("start");
+
+                    String customer_query = "SELECT * FROM customers " +
+                            "WHERE firstName = ?";
+                    PreparedStatement customer_statement = conn.prepareStatement(customer_query);
+                    customer_statement.setString(1, first);
+                    ResultSet customer_rs = customer_statement.executeQuery();
+                    customer_rs.next();
+                    String customer = customer_rs.getString("firstName");
+                    System.out.println(customer);
+
+                    // Insert values into sales
+                    User user = (User) request.getSession().getAttribute("user");
+                    Map<String, Integer> cart = user.getCart();
+                    System.out.println("test");
+
+                    String sales_query = "INSERT INTO sales (customerId, movieId, salesDate)" +
+                            "VALUES (?, ?, ?)";
+
+                    LocalDate cur_date = LocalDate.now();
+
+                    for (var entry : cart.entrySet())
+                    {
+                        for (int i = 0; i < entry.getValue(); i++)
+                        {
+                            System.out.println(entry.getKey());
+                            PreparedStatement insert_statement = conn.prepareStatement(sales_query);
+                            insert_statement.setString(1, customer);
+                            insert_statement.setString(2, entry.getKey());
+                            insert_statement.setDate(3, Date.valueOf(cur_date));
+                            // Perform the query
+                            insert_statement.executeQuery();
+                        }
+
+                    }
 
                     responseJsonObject.addProperty("status", "success");
                     responseJsonObject.addProperty("message", "success");

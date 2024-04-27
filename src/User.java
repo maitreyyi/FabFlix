@@ -23,5 +23,9 @@ public class User {
         return this.parameters;
     }
 
+    public Map<String, Integer> getCart() {
+        return this.cart;
+    }
+
 
 }
