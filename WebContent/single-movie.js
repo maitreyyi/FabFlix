@@ -67,10 +67,33 @@ function handleResult(resultData) {
     }
 
     rowHTML += "</th></tr>";
-
     // Append the row created to the table body, which will refresh the page
     genreTableBodyElement.append(rowHTML);
 
+    let addCartBtn = jQuery("#add-cart");
+    addCartBtn.append("<button class='add-to-cart' data-movie-id='" + resultData["movie_id"] + "'>Add</button>");
+
+    console.log('button added');
+
+}
+function addCart(movieId) {
+    //send data along to shopping servlet (add cart info)
+    jQuery.ajax({
+        dataType: "json",  // Setting return data type
+        method: "POST",// Setting request method
+        data: {
+            movieId: movieId,
+            add: 'True'
+        },
+        url: 'api/cart', // Setting request url,
+        success: function(response){
+            console.log(response);
+        },
+        error: function(xhr, status, error) {
+            // Handle error response
+            console.log(error);
+        }
+    });
 }
 
 const backButton = document.getElementById("jumpback");
@@ -78,6 +101,14 @@ backButton.addEventListener("click", function(event) {
     // Prevent the default button click behavior
     event.preventDefault();
     window.location = `movie-list.html?session=true`
+});
+
+$(document).ready(function() {
+    $(document).on("click", ".add-to-cart", function() {
+        console.log('click logged');
+        var movieId = $(this).data("movie-id");
+        addCart(movieId);
+    });
 });
 
 /**

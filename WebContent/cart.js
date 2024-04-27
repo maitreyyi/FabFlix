@@ -1,6 +1,6 @@
 function handleResult(resultData) {
     let moviesTableBodyElement = jQuery("#cart_table_body");
-
+    let total_price = 0;
     console.log("handleResult: populating cart");
 
     // append two html <p> created to the h3 body, which will refresh the page
@@ -16,7 +16,11 @@ function handleResult(resultData) {
 
         rowHTML += "</tr>";
         moviesTableBodyElement.append(rowHTML);
+        total_price += parseFloat(resultData[i]["price"]);
     }
+    let totalPriceElem = jQuery("#total-price");
+    totalPriceElem.append("<p>Total price: $" + total_price.toFixed(2) + "</p>")
+    totalPriceElem.append("<a href = './payment.html' class = 'checkout' >Continue to checkout</a>" );
 
 }
 //getting cart results

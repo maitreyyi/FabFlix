@@ -98,6 +98,7 @@ public class SingleMovieServlet extends HttpServlet {
             String movieDirector = rs.getString("director");
 
             // Add data as properties of the object
+            movieInfoObj.addProperty("movie_id", id);
             movieInfoObj.addProperty("movie_title", movieTitle);
             movieInfoObj.addProperty("movie_year", movieYear);
             movieInfoObj.addProperty("movie_director", movieDirector);
