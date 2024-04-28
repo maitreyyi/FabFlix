@@ -1,5 +1,8 @@
 let payment_form = $("#payment_form");
 
+let total = document.getElementById("total");
+let total_text = "Cart Total: $" + localStorage.getItem('total');
+total.innerText = total_text;
 /**
  * Handle the data returned by LoginServlet
  * @param resultData jsonObject

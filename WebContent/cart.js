@@ -19,6 +19,7 @@ function handleResult(resultData) {
         total_price += parseFloat(resultData[i]["price"])*parseFloat(resultData[i]["quantity"]);
     }
     let totalPriceElem = jQuery("#total-price");
+    localStorage.setItem('total', total_price.toFixed(2));
     totalPriceElem.append("<h3>Total price: $" + total_price.toFixed(2) + "</h3>")
     totalPriceElem.append("<a href = './payment.html' class='btn btn-primary btn-lg' role='button' >Continue to checkout</a>" );
 
