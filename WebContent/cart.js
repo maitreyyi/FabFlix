@@ -15,11 +15,13 @@ function handleResult(resultData) {
         rowHTML += "<th><button class = 'decreaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> - </button> " + resultData[i]["quantity"] + " <button class = 'increaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> + </button></th>";
 
         rowHTML += "</tr>";
+
         moviesTableBodyElement.append(rowHTML);
         total_price += parseFloat(resultData[i]["price"])*parseFloat(resultData[i]["quantity"]);
     }
     let totalPriceElem = jQuery("#total-price");
     localStorage.setItem('total', total_price.toFixed(2));
+
     totalPriceElem.append("<h3>Total price: $" + total_price.toFixed(2) + "</h3>")
     totalPriceElem.append("<a href = './payment.html' class='btn btn-primary btn-lg' role='button' >Continue to checkout</a>" );
 
@@ -70,10 +72,6 @@ function removeCart(movieId) {
         url: 'api/cart', // Setting request url,
         success: function(response){
             console.log(response);
-        },
-        error: function(xhr, status, error) {
-            // Handle error response
-            console.log(error);
         }
     });
 }

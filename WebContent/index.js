@@ -46,19 +46,6 @@ function handleResult(resultData) {
 
 }
 
-const sendSearch = searchData => {
-    let queryString = '';
-    for (const key in searchData) {
-        if (searchData.hasOwnProperty(key)) {
-            if (queryString.length > 0) {
-                queryString += '&';
-            }
-            queryString += key + '=' + encodeURIComponent(searchData[key]);
-        }
-    }
-    window.location = `movie-list.html?${queryString}`
-}
-
 const form = document.getElementById("search");
 const submitButton = form.querySelector("button[type='submit']");
 submitButton.addEventListener("click", function(event) {
@@ -85,7 +72,18 @@ submitButton.addEventListener("click", function(event) {
     if(starName && starName.length > 0){
         searchData['star_name'] = starName;
     }
-    sendSearch(searchData);
+
+    //create url for redirection using form data
+    let queryString = '';
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`
 
 });
 

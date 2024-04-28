@@ -51,7 +51,6 @@ function handleResult(resultData) {
             "</th>";
         rowHTML += "</tr>";
 
-        // Append the row created to the table body, which will refresh the page
         moviesTableBodyElement.append(rowHTML);
     }
 }
@@ -75,13 +74,9 @@ backButton.addEventListener("click", function(event) {
     window.location = sessionStorage.getItem('main_url');
 });
 
-/**
- * Once this .js is loaded, following scripts will be executed by the browser\
- */
 
 // Get id from URL
 let starId = getParameterByName('id');
-// Get id from URL
 let movieId = getParameterByName('id');
 
 const form = document.getElementById("search");
@@ -110,7 +105,18 @@ submitButton.addEventListener("click", function(event) {
     if(starName && starName.length > 0){
         searchData['star_name'] = starName;
     }
-    sendSearch(searchData);
+
+    //create url using form data and redirect user
+    let queryString = '';
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`;
 
 });
 

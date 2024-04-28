@@ -109,13 +109,11 @@ function addCart(movieId) {
 }
 function showAddCartMsg() {
     var msg = document.getElementById('add-cart-msg');
-    console.log(msg);
     msg.textContent = 'Your movie has been added to Cart';
     msg.style.display = 'block';
 
     setTimeout(function() {
-        msg.style.display='none';}, 2000);
-    console.log('message has been displayed');
+        msg.style.display='none';}, 1700);
 }
 const sendSort = searchData => {
     let queryString = '';

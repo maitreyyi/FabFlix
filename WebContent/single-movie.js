@@ -78,7 +78,6 @@ function handleResult(resultData) {
 }
 function showAddCartMsg() {
     var msg = document.getElementById('add-cart-msg');
-    console.log(msg);
     msg.textContent = 'Your movie has been added to Cart';
     msg.style.display = 'block';
 
@@ -100,18 +99,6 @@ function addCart(movieId) {
         }
     });
 }
-const sendSearch = searchData => {
-    let queryString = '';
-    for (const key in searchData) {
-        if (searchData.hasOwnProperty(key)) {
-            if (queryString.length > 0) {
-                queryString += '&';
-            }
-            queryString += key + '=' + encodeURIComponent(searchData[key]);
-        }
-    }
-    window.location = `movie-list.html?${queryString}`
-}
 
 const backButton = document.getElementById("jumpback");
 backButton.addEventListener("click", function(event) {
@@ -122,7 +109,6 @@ backButton.addEventListener("click", function(event) {
 
 $(document).ready(function() {
     $(document).on("click", ".add-to-cart", function() {
-        console.log('click logged');
         var movieId = $(this).data("movie-id");
         addCart(movieId);
         showAddCartMsg();
@@ -149,19 +135,30 @@ submitButton.addEventListener("click", function(event) {
     const director = formData.get("director");
     const starName = formData.get("star_name");
 
-    if(title && title.length > 0){
+    if(title != null && title.length > 0){
         searchData['title'] = title;
     }
-    if(year){
+    if(year != null){
         searchData['year'] = year;
     }
-    if(director && director.length > 0){
+    if(director != null && director.length > 0){
         searchData['director'] = director;
     }
-    if(starName && starName.length > 0){
+    if(starName != null && starName.length > 0){
         searchData['star_name'] = starName;
     }
-    sendSearch(searchData);
+
+    //create url using form data and redirect user
+    let queryString = '';
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`;
 
 });
 
