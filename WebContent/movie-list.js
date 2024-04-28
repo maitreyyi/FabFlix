@@ -82,7 +82,7 @@ function handleResult(resultData) {
     let cur_page = (params.get("page")) ? params.get("page") : "1";
     let limit = (params.get("limit")) ? params.get("limit") : "10";
 
-    if (resultData.length > 0 && cur_page * limit >= resultData[0]["count"]) {
+    if (resultData.length === 0 || cur_page * limit >= resultData[0]["count"]) {
         next_page.setAttribute('disabled', '');
     }
 

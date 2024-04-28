@@ -61,23 +61,6 @@ public class MovieListServlet extends HttpServlet {
 
             page = parameters.get("page");
             limit = parameters.get("limit");
-
-//            String contextPath = request.getContextPath();
-//            String to_send = contextPath + "/movie-list.html?";
-//            int cur_param = 0;
-//            for (var entry : parameters.entrySet()) {
-//                if (!entry.getValue().equals("%")) {
-//                    if (cur_param != 0){
-//                        to_send += "&";
-//                    }
-//                    to_send += entry.getKey() + "=" + entry.getValue();
-//                    cur_param++;
-//                }
-//            }
-//
-//            System.out.println(to_send);
-//            response.sendRedirect(to_send);
-//            return;
         }
         else {
             // Retrieve parameter genre from url request.
@@ -124,7 +107,7 @@ public class MovieListServlet extends HttpServlet {
                     "FROM movies as m " +
                     "JOIN ratings AS r ON m.id = r.movieId ";
 
-            String count_query = "SELECT count(m.id) " +
+            String count_query = "SELECT count(DISTINCT m.id) as count " +
                     "FROM movies as m " +
                     "JOIN ratings AS r ON m.id = r.movieId ";
 
@@ -236,7 +219,7 @@ public class MovieListServlet extends HttpServlet {
                 String movieYear = rs.getString("year");
                 String movieDirector = rs.getString("director");
                 String rating = rs.getString("rating");
-                String count = count_rs.getString("count(m.id)");
+                String count = count_rs.getString("count");
 
                 price_statement.setString(1,movieId);
                 ResultSet price_rs = price_statement.executeQuery();
