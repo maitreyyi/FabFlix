@@ -50,7 +50,8 @@ function handleResult(resultData) {
     let rowHTML = "";
     rowHTML += "<tr><th>";
     for (let i = 0; i < resultData["genres"].length; i++) {
-        rowHTML += resultData["genres"][i]["genre_name"]
+        rowHTML += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="movie-list.html?genre='
+            + resultData["genres"][i]["genre_id"] + '">' + resultData["genres"][i]["genre_name"] + '</a>';
         if (i + 1 < resultData["genres"].length)
             rowHTML += ", ";
     }
@@ -59,7 +60,7 @@ function handleResult(resultData) {
     for (let i = 0; i < resultData["stars"].length; i++) {
         // Add a link to single-star.html with id passed with GET url parameter
         rowHTML +=
-        '<a href="single-star.html?id=' + resultData["stars"][i]['star_id'] + '">'
+        '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="single-star.html?id=' + resultData["stars"][i]['star_id'] + '">'
         + resultData["stars"][i]["star_name"] +     // display star_name for the link text
         '</a>'
         if (i + 1 < resultData["stars"].length)

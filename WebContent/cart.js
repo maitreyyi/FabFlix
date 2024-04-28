@@ -7,7 +7,7 @@ function handleResult(resultData) {
     for (let i = 0; i < resultData.length; i++) {
         let rowHTML = "";
         //title
-        rowHTML += '<tr><th><a href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
+        rowHTML += '<tr><th><a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
             + resultData[i]["movie_title"] + '</a></th>';
         //price
         rowHTML += "<th>$" + resultData[i]["price"].toFixed(2) + "</th>";

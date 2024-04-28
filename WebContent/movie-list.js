@@ -39,7 +39,7 @@ function handleResult(resultData) {
     // append two html <p> created to the h3 body, which will refresh the page
     for (let i = 0; i < resultData.length; i++) {
         let rowHTML = "";
-        rowHTML += '<tr><th><a href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
+        rowHTML += '<tr><th><a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
             + resultData[i]["movie_title"] + '</a></th>' +
             "<th>" + resultData[i]["movie_year"] + "</th>" +
             "<th>" + resultData[i]["movie_director"] + "</th>" +
@@ -48,7 +48,7 @@ function handleResult(resultData) {
         rowHTML += "<th>";
         // Concatenate the html tags with resultData jsonObject to create table rows
         for (let j = 0; j < Math.min(3,resultData[i]["genres"].length); j++) {
-            rowHTML += '<a href="movie-list.html?genre=' + resultData[i]["genres"][j]["genre_id"] +'">' +
+            rowHTML += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="movie-list.html?genre=' + resultData[i]["genres"][j]["genre_id"] +'">' +
                         resultData[i]["genres"][j]["genre_name"] + '</a>';
             if (resultData[i]["genres"][j+1] != null) {
                 rowHTML += ", ";
@@ -59,7 +59,7 @@ function handleResult(resultData) {
         rowHTML += "<th>";
         // Concatenate the html tags with resultData jsonObject to create table rows
         for (let j = 0; j < Math.min(3, resultData[i]["stars"].length); j++) {
-            rowHTML += '<a href="single-star.html?id=' + resultData[i]["stars"][j]['star_id'] + '">'
+            rowHTML += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="single-star.html?id=' + resultData[i]["stars"][j]['star_id'] + '">'
                 + resultData[i]["stars"][j]["star_name"] +'</a>';
             if (j < 2) {
                 rowHTML += ", ";
