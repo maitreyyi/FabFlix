@@ -22,8 +22,15 @@
 
 1. Implemented search function and redirected to movie-list with specified parameters
 2. Worked on navigation bar and added into all pages
-2. Created shopping cart page that allows user to modify quantity, see the total price and proceed to checkout
-3. Added code for cart servlet that handled get/post requests
-4. Worked on jump functionality among pages
-5. Added add to cart options in movie-list and single movie pages with a notification upon success
-6. Helped debug issues we ran into when integrating all features together
+3. Created shopping cart page that allows user to modify quantity, see the total price and proceed to checkout
+4. Added code for cart servlet that handled get/post requests
+5. Worked on jump functionality among pages
+6. Added add to cart options in movie-list and single movie pages with a notification upon success
+7. Helped debug issues we ran into when integrating all features together
+
+### Substring Matching:
+1. Starting characters -- LIKE "?%"
+   * Starts with a particular character
+2. All search options -- LIKE "%?%"
+   * Title, year, director, star name
+   * Exists anywhere in the field
