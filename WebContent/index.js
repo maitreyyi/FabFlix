@@ -11,8 +11,8 @@ function handleResult(resultData) {
     let content = "";
     for (let i = 0; i < resultData.length; i++)
     {
-        content += '<a href="movie-list.html?genre=' + resultData[i]["genre_id"]
-                    + '">' + resultData[i]["genre_name"] + '</a>';
+        content += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="movie-list.html?genre='
+                    + resultData[i]["genre_id"] + '">' + resultData[i]["genre_name"] + '</a>';
         if (i + 1 < resultData.length)
         {
             content += " "
@@ -27,8 +27,8 @@ function handleResult(resultData) {
     content = "";
     for (let i = 65; i < 91; i++)
     {
-        content += '<a href="movie-list.html?start=' + String.fromCharCode(i)
-                    + '">' + String.fromCharCode(i) + '</a>';
+        content += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="movie-list.html?start='
+                    + String.fromCharCode(i) + '">' + String.fromCharCode(i) + '</a>';
         if (i + 1 < 91)
         {
             content += " "
@@ -39,9 +39,9 @@ function handleResult(resultData) {
     content = "";
     for (let i = 0; i < 10; i++)
     {
-        content += '<a href="movie-list.html?start=' + i + '">' + i + '</a>' + " ";
+        content += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="movie-list.html?start=' + i + '">' + i + '</a>' + " ";
     }
-    content += '<a href="movie-list.html?start=*">*</a>';
+    content += '<a class="link-underline link-underline-opacity-0 link-underline-opacity-100-hover" href="movie-list.html?start=*">*</a>';
     alphanumericLink.append("<h5>"+ content + "</h5>");
 
 }
