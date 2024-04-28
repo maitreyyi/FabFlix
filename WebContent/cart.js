@@ -10,7 +10,7 @@ function handleResult(resultData) {
         rowHTML += '<tr><th><a href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
             + resultData[i]["movie_title"] + '</a></th>';
         //price
-        rowHTML += "<th>" + "$" + resultData[i]["price"] + "</th>";
+        rowHTML += "<th>$" + resultData[i]["price"].toFixed(2) + "</th>";
         //quantity
         rowHTML += "<th><button class = 'decreaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> - </button> " + resultData[i]["quantity"] + " <button class = 'increaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> + </button></th>";
 

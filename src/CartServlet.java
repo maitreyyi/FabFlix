@@ -86,7 +86,7 @@ public class CartServlet extends HttpServlet {
                 if (rs.next() && price_rs.next()) {
                     // Convert row data into strings
                     String movieTitle = rs.getString("title");
-                    String price = price_rs.getString("price");
+                    float price = price_rs.getFloat("price");
 
                     // Add data as properties of the object
                     movieObj.addProperty("movie_id", movie_id);

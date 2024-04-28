@@ -240,22 +240,22 @@ public class MovieListServlet extends HttpServlet {
 
                 price_statement.setString(1,movieId);
                 ResultSet price_rs = price_statement.executeQuery();
-                String price;
+                float price;
                 if(!price_rs.next()){
                     //calculate new price
                     Random rand = new Random();
                     int scale = 2;
                     float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
-                    price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+                    price = (float)(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
 
                     //insert into movie_prices table
                     PreparedStatement insert_statement = conn.prepareStatement(insert_price);
                     insert_statement.setString(1,movieId);
-                    insert_statement.setString(2, price);
+                    insert_statement.setFloat(2, price);
                     insert_statement.executeUpdate();
                 }
                 else {
-                    price = price_rs.getString("price");
+                    price = price_rs.getFloat("price");
                 }
 
                 // Add data as properties of the object

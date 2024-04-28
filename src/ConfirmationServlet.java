@@ -53,13 +53,14 @@ public class ConfirmationServlet extends HttpServlet {
 
             // Get stars and movie information
             // Construct a queries with parameter represented by "?"
-            String sales_query = "SELECT id, movieId " +
-                    "ORDER BY id DESC" +
+            String sales_query = "SELECT id, movieId, quantity " +
+                    "FROM sales " +
+                    "ORDER BY id DESC " +
                     "LIMIT ?";
 
-            String movie_query = "SELECT title, price " +
-                    "FROM movies " +
-                    "WHERE id = ?";
+            String movie_query = "SELECT m.title, mp.price " +
+                    "FROM movies as m, movie_prices as mp " +
+                    "WHERE m.id = mp.movieId AND m.id = ?";
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(sales_query);
@@ -82,13 +83,13 @@ public class ConfirmationServlet extends HttpServlet {
                 int quantity = rs.getInt("quantity");
 
                 PreparedStatement movie_statement = conn.prepareStatement(movie_query);
-                statement.setString(1, movieId);
+                movie_statement.setString(1, movieId);
 
                 // Perform the query
                 ResultSet movie_rs = movie_statement.executeQuery();
                 movie_rs.next();
-                String title = rs.getString("title");
-                int price = rs.getInt("price");
+                String title = movie_rs.getString("title");
+                float price = movie_rs.getFloat("price");
 
                 saleInfo.addProperty("salesId", salesId);
                 saleInfo.addProperty("title", title);

@@ -65,7 +65,7 @@ function handleResult(resultData) {
                 rowHTML += ", ";
             }
         }
-        rowHTML += "<th>" + "$" + resultData[i]["price"] + "</th>";
+        rowHTML += "<th>" + "$" + resultData[i]["price"].toFixed(2) + "</th>";
         rowHTML += "</th></tr>";
         moviesTableBodyElement.append(rowHTML);
     }
