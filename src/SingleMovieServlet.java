@@ -71,17 +71,28 @@ public class SingleMovieServlet extends HttpServlet {
                                  "FROM movie_prices mp " +
                                  "WHERE mp.movieId = ?";
 
+            String insert_price = "INSERT INTO movie_prices VALUES(?, ?)";
+
+            //getting price and setting if it doesn't exist
             PreparedStatement price_statement = conn.prepareStatement(price_query);
             price_statement.setString(1,id);
             ResultSet price_rs = price_statement.executeQuery();
-            price_rs.next();
-            String price = price_rs.getString("price");
-
-            if(price == null){
+            float price;
+            if(!price_rs.next()){
+                //calculate new price
                 Random rand = new Random();
                 int scale = 2;
                 float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
-                price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+                price = (float)(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+
+                //insert into movie_prices table
+                PreparedStatement insert_statement = conn.prepareStatement(insert_price);
+                insert_statement.setString(1,id);
+                insert_statement.setFloat(2, price);
+                insert_statement.executeUpdate();
+            }
+            else {
+                price = price_rs.getFloat("price");
             }
 
             PreparedStatement statement = conn.prepareStatement(stars_query);

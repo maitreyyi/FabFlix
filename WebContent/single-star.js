@@ -60,7 +60,7 @@ const backButton = document.getElementById("jumpback");
 backButton.addEventListener("click", function(event) {
     // Prevent the default button click behavior
     event.preventDefault();
-    window.location = `movie-list.html?session=true`
+    window.location = sessionStorage.getItem('main_url');
 });
 
 /**
