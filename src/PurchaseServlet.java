@@ -44,7 +44,6 @@ public class PurchaseServlet extends HttpServlet {
             card = card.substring(0, 4) + " " + card.substring(4, 8) + " " + card.substring(8, 12) + " " + card.substring(12);
             String expr_param = (!request.getParameter("expir_date").isEmpty()) ? request.getParameter("expir_date") : "1000-01-01";
             Date expiration = Date.valueOf(expr_param);
-            System.out.println(expiration);
 
             /* This example only allows username/password to be test/test
             /  in the real project, you should talk to the database to verify username/password
@@ -64,8 +63,6 @@ public class PurchaseServlet extends HttpServlet {
                 String return_first = rs.getString("firstName");
                 String return_last = rs.getString("lastName");
                 Date return_expiration = rs.getDate("expiration");
-
-                System.out.println(return_first + ", " + return_last + ", " + return_expiration);
 
                 if (!first.equals(return_first)) // Double-check string comparisons
                 {
@@ -95,40 +92,34 @@ public class PurchaseServlet extends HttpServlet {
                 {
                     // Login success:
                     // set this user into the session
-                    System.out.println("start");
 
-                    String customer_query = "SELECT * FROM customers " +
-                            "WHERE firstName = ?";
+                    String customer_query = "SELECT id FROM customers " +
+                            "WHERE firstName = ? AND lastName = ?";
                     PreparedStatement customer_statement = conn.prepareStatement(customer_query);
                     customer_statement.setString(1, first);
+                    customer_statement.setString(2, last);
                     ResultSet customer_rs = customer_statement.executeQuery();
                     customer_rs.next();
-                    String customer = customer_rs.getString("firstName");
-                    System.out.println(customer);
+                    String customer = customer_rs.getString("id");
 
                     // Insert values into sales
                     User user = (User) request.getSession().getAttribute("user");
                     Map<String, Integer> cart = user.getCart();
-                    System.out.println("test");
 
-                    String sales_query = "INSERT INTO sales (customerId, movieId, salesDate)" +
-                            "VALUES (?, ?, ?)";
+                    String sales_query = "INSERT INTO sales (customerId, movieId, salesDate, quantity)" +
+                            "VALUES (?, ?, ?, ?)";
 
                     LocalDate cur_date = LocalDate.now();
 
                     for (var entry : cart.entrySet())
                     {
-                        for (int i = 0; i < entry.getValue(); i++)
-                        {
-                            System.out.println(entry.getKey());
-                            PreparedStatement insert_statement = conn.prepareStatement(sales_query);
-                            insert_statement.setString(1, customer);
-                            insert_statement.setString(2, entry.getKey());
-                            insert_statement.setDate(3, Date.valueOf(cur_date));
-                            // Perform the query
-                            insert_statement.executeQuery();
-                        }
-
+                        PreparedStatement insert_statement = conn.prepareStatement(sales_query);
+                        insert_statement.setString(1, customer);
+                        insert_statement.setString(2, entry.getKey());
+                        insert_statement.setDate(3, Date.valueOf(cur_date));
+                        insert_statement.setInt(4, entry.getValue());
+                        // Perform the query
+                        insert_statement.executeUpdate();
                     }
 
                     responseJsonObject.addProperty("status", "success");
