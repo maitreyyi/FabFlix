@@ -6,6 +6,16 @@
     <welcome-file-list>
         <welcome-file>login.html</welcome-file>
     </welcome-file-list>
+    <servlet>
+        <servlet-name>ssi</servlet-name>
+        <servlet-class>org.apache.catalina.ssi.SSIServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ssi</servlet-name>
+        <url-pattern>*.shtml</url-pattern>
+        <!-- Adjust the URL pattern as needed -->
+    </servlet-mapping>
 
     <!-- Register the DataSource which defined in META-INF/context.xml-->
     <resource-ref>

@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
+import java.util.Random;
 
 // Declaring a WebServlet called SingleStarServlet, which maps to url "/api/movie-list"
 @WebServlet(name = "MovieListServlet", urlPatterns = "/api/movie-list")
@@ -127,6 +128,12 @@ public class MovieListServlet extends HttpServlet {
                     "FROM movies as m " +
                     "JOIN ratings AS r ON m.id = r.movieId ";
 
+            String price_query = "SELECT price " +
+                                 "FROM movie_prices mp " +
+                                 "WHERE mp.movieId = ?";
+
+            String insert_price = "INSERT INTO movie_prices VALUES(?, ?)";
+
             if (!genre.equals("%")) {
                 movie_query += "JOIN genres_in_movies AS gim ON m.id = gim.movieId " +
                         "JOIN genres AS g ON g.id = gim.genreId " +
@@ -179,6 +186,7 @@ public class MovieListServlet extends HttpServlet {
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(movie_query);
             PreparedStatement count_statement = conn.prepareStatement(count_query);
+
             //check if title LIKE '%%'still works how we intended it to
             title = '%' + title + '%';
             director = '%' + director + '%';
@@ -220,6 +228,7 @@ public class MovieListServlet extends HttpServlet {
             //set up movies objects
             while(rs.next()) {
                 JsonObject movieObj = new JsonObject();
+                PreparedStatement price_statement = conn.prepareStatement(price_query);
 
                 // Convert row data into strings
                 String movieId = rs.getString("id");
@@ -229,6 +238,26 @@ public class MovieListServlet extends HttpServlet {
                 String rating = rs.getString("rating");
                 String count = count_rs.getString("count(m.id)");
 
+                price_statement.setString(1,movieId);
+                ResultSet price_rs = price_statement.executeQuery();
+                String price;
+                if(!price_rs.next()){
+                    //calculate new price
+                    Random rand = new Random();
+                    int scale = 2;
+                    float result = (float)(1.5 + rand.nextFloat() * 8); //minimum price + random*price_range
+                    price = Double.toString(Math.round(result * Math.pow(10, scale)) / Math.pow(10, scale));
+
+                    //insert into movie_prices table
+                    PreparedStatement insert_statement = conn.prepareStatement(insert_price);
+                    insert_statement.setString(1,movieId);
+                    insert_statement.setString(2, price);
+                    insert_statement.executeUpdate();
+                }
+                else {
+                    price = price_rs.getString("price");
+                }
+
                 // Add data as properties of the object
                 movieObj.addProperty("movie_id", movieId);
                 movieObj.addProperty("movie_title", movieTitle);
@@ -236,7 +265,9 @@ public class MovieListServlet extends HttpServlet {
                 movieObj.addProperty("movie_director", movieDirector);
                 movieObj.addProperty("rating", rating);
                 movieObj.addProperty("count", count);
+                movieObj.addProperty("price",price);
 
+                price_statement.close();
                 movieArray.add(movieObj);
 
                 JsonArray genreArray = new JsonArray();

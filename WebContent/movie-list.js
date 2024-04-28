@@ -40,7 +40,7 @@ function handleResult(resultData) {
     for (let i = 0; i < resultData.length; i++) {
         let rowHTML = "";
         rowHTML += '<tr><th><a href="single-movie.html?id=' + resultData[i]["movie_id"] + '">'
-            + resultData[i]["movie_title"] + '</a></th>' +
+            + resultData[i]["movie_title"] + '   </a><button class = "add-to-cart" data-movie-id=' + resultData[i]["movie_id"] + '>Add</button></th>' +
             "<th>" + resultData[i]["movie_year"] + "</th>" +
             "<th>" + resultData[i]["movie_director"] + "</th>" +
             "<th>" + resultData[i]["rating"] + "</th>";
@@ -65,6 +65,7 @@ function handleResult(resultData) {
                 rowHTML += ", ";
             }
         }
+        rowHTML += "<th>" + "$" + resultData[i]["price"] + "</th>";
         rowHTML += "</th></tr>";
         moviesTableBodyElement.append(rowHTML);
     }
@@ -83,7 +84,25 @@ function handleResult(resultData) {
 
 }
 
-
+function addCart(movieId) {
+    //send data along to shopping servlet (add cart info)
+    jQuery.ajax({
+        dataType: "json",  // Setting return data type
+        method: "POST",// Setting request method
+        data: {
+            movieId: movieId,
+            add: 'True'
+        },
+        url: 'api/cart', // Setting request url,
+        success: function(response){
+            console.log(response);
+        },
+        error: function(xhr, status, error) {
+            // Handle error response
+            console.log(error);
+        }
+    });
+}
 const sendSort = searchData => {
     let queryString = '';
     const params = (new URL(document.location)).searchParams;
@@ -189,6 +208,16 @@ const movie_url= `api/movie-list?${params.toString()}`;
 /*
  * Once this .js is loaded, following scripts will be executed by the browser\
  */
+
+// Assuming jQuery is already loaded
+$(document).ready(function() {
+    console.log('inside document');
+    $(document).on("click", ".add-to-cart", function() {
+        console.log('click logged');
+        var movieId = $(this).data("movie-id");
+        addCart(movieId);
+    });
+});
 
 
 // Makes the HTTP GET request and registers on success callback function handleResult

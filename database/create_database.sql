@@ -76,3 +76,10 @@ CREATE TABLE `ratings`(
 	PRIMARY KEY(`movieId`),
 	FOREIGN KEY(`movieId`) REFERENCES movies(`id`)
 );
+
+CREATE TABLE `movie_prices`(
+                               `movieId` VARCHAR(10) NOT NULL,
+                               `price` FLOAT(10,2) NOT NULL,
+	PRIMARY KEY(`movieId`),
+	FOREIGN KEY(`movieId`) REFERENCES movies(`id`)
+);
