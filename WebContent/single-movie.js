@@ -71,10 +71,19 @@ function handleResult(resultData) {
     genreTableBodyElement.append(rowHTML);
 
     let addCartBtn = jQuery("#add-cart");
-    addCartBtn.append("<button class='add-to-cart' data-movie-id='" + resultData["movie_id"] + "'>Add</button>");
+    addCartBtn.append("<button class='add-to-cart d-grid btn-btn-primary' data-movie-id='" + resultData["movie_id"] + "'>Add</button>");
 
     console.log('button added');
 
+}
+function showAddCartMsg() {
+    var msg = document.getElementById('add-cart-msg');
+    console.log(msg);
+    msg.textContent = 'Your movie has been added to Cart';
+    msg.style.display = 'block';
+
+    setTimeout(function() {
+        msg.style.display='none';}, 2000);
 }
 function addCart(movieId) {
     //send data along to shopping servlet (add cart info)
@@ -116,6 +125,7 @@ $(document).ready(function() {
         console.log('click logged');
         var movieId = $(this).data("movie-id");
         addCart(movieId);
+        showAddCartMsg();
     });
 });
 

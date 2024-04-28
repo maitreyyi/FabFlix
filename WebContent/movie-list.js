@@ -107,6 +107,16 @@ function addCart(movieId) {
         }
     });
 }
+function showAddCartMsg() {
+    var msg = document.getElementById('add-cart-msg');
+    console.log(msg);
+    msg.textContent = 'Your movie has been added to Cart';
+    msg.style.display = 'block';
+
+    setTimeout(function() {
+        msg.style.display='none';}, 2000);
+    console.log('message has been displayed');
+}
 const sendSort = searchData => {
     let queryString = '';
     const params = (new URL(document.location)).searchParams;
@@ -218,8 +228,8 @@ sessionStorage.setItem('main_url',`movie-list.html?${params.toString()}`);
 $(document).ready(function() {
     $(document).on("click", ".add-to-cart", function() {
         var movieId = $(this).data("movie-id");
-        var addCartBtn = document.querySelector(".add-to-cart");
         addCart(movieId);
+        showAddCartMsg();
 
     });
 });
