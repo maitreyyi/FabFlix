@@ -91,6 +91,18 @@ function addCart(movieId) {
         }
     });
 }
+const sendSearch = searchData => {
+    let queryString = '';
+    for (const key in searchData) {
+        if (searchData.hasOwnProperty(key)) {
+            if (queryString.length > 0) {
+                queryString += '&';
+            }
+            queryString += key + '=' + encodeURIComponent(searchData[key]);
+        }
+    }
+    window.location = `movie-list.html?${queryString}`
+}
 
 const backButton = document.getElementById("jumpback");
 backButton.addEventListener("click", function(event) {
@@ -113,6 +125,35 @@ $(document).ready(function() {
 
 // Get id from URL
 let movieId = getParameterByName('id');
+const form = document.getElementById("search");
+const submitButton = form.querySelector("button[type='submit']");
+submitButton.addEventListener("click", function(event) {
+    // Prevent the default button click behavior
+    event.preventDefault();
+    const searchData = {}
+
+    //Extract the form data
+    const formData = new FormData(form);
+    const title = formData.get("title");
+    const year = formData.get("year");
+    const director = formData.get("director");
+    const starName = formData.get("star_name");
+
+    if(title && title.length > 0){
+        searchData['title'] = title;
+    }
+    if(year){
+        searchData['year'] = year;
+    }
+    if(director && director.length > 0){
+        searchData['director'] = director;
+    }
+    if(starName && starName.length > 0){
+        searchData['star_name'] = starName;
+    }
+    sendSearch(searchData);
+
+});
 
 // Makes the HTTP GET request and registers on success callback function handleResult
 jQuery.ajax({
