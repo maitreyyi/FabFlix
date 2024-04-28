@@ -209,7 +209,7 @@ next_page.addEventListener("click", function(event) {
 
 const params = (new URL(document.location)).searchParams;
 const movie_url= `api/movie-list?${params.toString()}`;
-sessionStorage.setItem('main_url',movie_url);
+sessionStorage.setItem('main_url',`movie-list.html?${params.toString()}`);
 /*
  * Once this .js is loaded, following scripts will be executed by the browser\
  */

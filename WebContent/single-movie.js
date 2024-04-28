@@ -88,10 +88,6 @@ function addCart(movieId) {
         url: 'api/cart', // Setting request url,
         success: function(response){
             console.log(response);
-        },
-        error: function(xhr, status, error) {
-            // Handle error response
-            console.log(error);
         }
     });
 }
