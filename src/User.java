@@ -46,6 +46,10 @@ public class User {
             }
         }
     }
+    public void deleteFromCart(String movie_id) {
+        //add item to cart if it doesn't exist, if it exists increment by one
+            this.cart.remove(movie_id);
+    }
     public Map<String, Integer> clearCart() {
         this.cart.clear();
         return this.cart;

@@ -13,6 +13,7 @@ function handleResult(resultData) {
         rowHTML += "<th>$" + resultData[i]["price"].toFixed(2) + "</th>";
         //quantity
         rowHTML += "<th><button class = 'decreaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> - </button> " + resultData[i]["quantity"] + " <button class = 'increaseQuantity' data-movie-id='" + resultData[i]["movie_id"] + "'> + </button></th>";
+        rowHTML += "<th><button class = 'removeItem' data-movie-id='" + resultData[i]["movie_id"] + "'> x </button>";
 
         rowHTML += "</tr>";
 
@@ -47,7 +48,7 @@ function addCart(movieId) {
         method: "POST",// Setting request method
         data: {
             movieId: movieId,
-            add: 'True'
+            action: 'add'
         },
         url: 'api/cart', // Setting request url,
         success: function(response){
@@ -67,7 +68,22 @@ function removeCart(movieId) {
         method: "POST",// Setting request method
         data: {
             movieId: movieId,
-            add: 'False'
+            action: 'remove'
+        },
+        url: 'api/cart', // Setting request url,
+        success: function(response){
+            console.log(response);
+        }
+    });
+}
+function deleteFromCart(movieId) {
+    //send data along to shopping servlet (add cart info)
+    jQuery.ajax({
+        dataType: "json",  // Setting return data type
+        method: "POST",// Setting request method
+        data: {
+            movieId: movieId,
+            action: 'delete'
         },
         url: 'api/cart', // Setting request url,
         success: function(response){
@@ -85,6 +101,11 @@ $(document).ready(function() {
     $(document).on("click", ".decreaseQuantity", function() {
         var movieId = $(this).data("movie-id");
         removeCart(movieId);
+        location.reload();
+    });
+    $(document).on("click", ".removeItem", function() {
+        var movieId = $(this).data("movie-id");
+        deleteFromCart(movieId);
         location.reload();
     });
 
