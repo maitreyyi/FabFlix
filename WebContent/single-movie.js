@@ -126,6 +126,7 @@ const form = document.getElementById("search");
 const submitButton = form.querySelector("button[type='submit']");
 submitButton.addEventListener("click", function(event) {
     // Prevent the default button click behavior
+    console.log('inside submit button');
     event.preventDefault();
     const searchData = {}
 
@@ -136,10 +137,12 @@ submitButton.addEventListener("click", function(event) {
     const director = formData.get("director");
     const starName = formData.get("star_name");
 
+    console.log(formData);
+
     if(title != null && title.length > 0){
         searchData['title'] = title;
     }
-    if(year != null){
+    if(year){
         searchData['year'] = year;
     }
     if(director != null && director.length > 0){
