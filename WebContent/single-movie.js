@@ -92,7 +92,7 @@ function addCart(movieId) {
         method: "POST",// Setting request method
         data: {
             movieId: movieId,
-            add: 'True'
+            action: 'add'
         },
         url: 'api/cart', // Setting request url,
         success: function(response){
