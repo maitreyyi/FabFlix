@@ -1,8 +1,8 @@
 ## CS 122B Project 2 FabFlix
 
 ### Demo: 
-1. Video URL: 
-2. URL to access: 
+1. Video URL: https://youtu.be/0bP6hQm2EJU
+2. URL to access: http://54.153.65.32:8080/cs122b-team-cs/
 
 ### Instructions to deploy Fablix: 
 1. Clone this repository using `git clone https://github.com/UCI-Chenli-teaching/cs122b-s24-team-cs.git'
