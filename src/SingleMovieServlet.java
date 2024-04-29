@@ -55,10 +55,12 @@ public class SingleMovieServlet extends HttpServlet {
 
             // Get stars and movie information
             // Construct a queries with parameter represented by "?"
+
             String stars_query = "SELECT m.title, m.year, m.director, sim.starId, s.name " +
-                    "from stars as s, stars_in_movies as sim, movies as m " +
-                    "where m.id = sim.movieId and sim.starId = s.id and m.id = ? " +
-                    "group by sim.starId order by count(sim.movieId)";
+                    "FROM (SELECT sim.starId FROM stars_in_movies sim WHERE sim.movieId = ? ) as star_list, stars_in_movies sim, stars s, movies m " +
+                    "WHERE star_list.starId = sim.starId and s.id = star_list.starId and m.id =? " +
+                    "GROUP BY sim.starId " +
+                    "ORDER BY count(sim.starId) DESC, s.name ASC ";
 
             String genre_query = "SELECT g.id, g.name from genres as g, genres_in_movies as gim " +
                     "where gim.genreId = g.id and gim.movieId = ?" +
@@ -97,6 +99,7 @@ public class SingleMovieServlet extends HttpServlet {
 
             PreparedStatement statement = conn.prepareStatement(stars_query);
             statement.setString(1, id);
+            statement.setString(2, id);
 
             // Perform the query
             ResultSet rs = statement.executeQuery();
