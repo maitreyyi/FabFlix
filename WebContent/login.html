@@ -9,7 +9,7 @@
 </head>
 <body style="background: aliceblue">
 <div id="head-bar" style="background-image: linear-gradient(to right, dodgerblue, cadetblue); height: 50px"></div>
-<div style="width: 400px; height: 450px; background: white" class="position-absolute top-50 start-50 translate-middle border rounded-3 shadow p-5">
+<div style="width: 500px; height: 550px; background: white" class="position-absolute top-50 start-50 translate-middle border rounded-3 shadow p-5">
     <h2 class="text-center mt-4">Login to Fablix</h2>
     <!-- Set the method to POST to avoid showing the username/password in the URL
          The default action is disabled to allow your own implementation. -->
@@ -19,6 +19,7 @@
         <br>
         <label for="password"><b>Password:</b></label>
         <input id="password" name="password" class="form-control" placeholder="Enter Password" type="password">
+        <div class="g-recaptcha mt-3 ps-1" data-sitekey="6Lf5U80pAAAAAINUqzmFc-1T6cmR0aLIr3uRf4JZ"></div>
         <div class="row">
             <input type="submit" value="Login" class="mt-4 mx-2 btn btn-primary col mt-4">
         </div>
@@ -31,6 +32,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!-- include our own JS file -->
 <script src="./login.js"></script>
+<script src='https://www.google.com/recaptcha/api.js' type="text/javascript"></script>
 
 </body>
 </html>

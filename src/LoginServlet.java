@@ -37,6 +37,12 @@ public class LoginServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
+            String gRecaptchaResponse = request.getParameter("g-recaptcha-response");
+            System.out.println("gRecaptchaResponse=" + gRecaptchaResponse);
+
+            RecaptchaVerifyUtils.verify(gRecaptchaResponse);
+
+
             String username = request.getParameter("username");
             String password = request.getParameter("password");
 
@@ -92,13 +98,20 @@ public class LoginServlet extends HttpServlet {
         } catch (Exception e) {
             // Write error message JSON object to output
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("errorMessage", e.getMessage());
-            out.write(jsonObject.toString());
-
-            // Log error to localhost log
             request.getServletContext().log("Error:", e);
-            // Set response status to 500 (Internal Server Error)
-            response.setStatus(500);
+            if (e.getMessage().equals("invalid-input-response")) {
+                jsonObject.addProperty("status", "failed");
+                jsonObject.addProperty("message", "Error verifying reCAPTCHA, please try again");
+                response.setStatus(202);
+            }
+            else {
+            jsonObject.addProperty("errorMessage", e.getMessage());
+            // Log error to localhost log
+                // Set response status to 500 (Internal Server Error)
+                response.setStatus(500);
+            }
+
+            out.write(jsonObject.toString());
         } finally {
             out.close();
         }
