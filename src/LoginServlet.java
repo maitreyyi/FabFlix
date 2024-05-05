@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import org.jasypt.util.password.StrongPasswordEncryptor;
 
 @WebServlet(name = "LoginServlet", urlPatterns = "/api/customer_login")
 public class LoginServlet extends HttpServlet {
@@ -58,9 +59,10 @@ public class LoginServlet extends HttpServlet {
 
             if(rs.next())
             {
-                String return_password = rs.getString("password");
+                String encrypted_password = rs.getString("password");
+                Boolean success = new StrongPasswordEncryptor().checkPassword(password, encrypted_password);
 
-                if (!password.equals(return_password)) // Double-check string comparisons
+                if (!success) // Double-check string comparisons
                 {
                     // Password is wrong, login fail
                     responseJsonObject.addProperty("status", "fail");
