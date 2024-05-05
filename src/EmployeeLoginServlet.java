@@ -4,6 +4,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jasypt.util.password.StrongPasswordEncryptor;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -61,9 +62,10 @@ public class EmployeeLoginServlet extends HttpServlet {
 
             if(rs.next())
             {
-                String return_password = rs.getString("password");
+                String encrypted_password = rs.getString("password");
+                Boolean success = new StrongPasswordEncryptor().checkPassword(password, encrypted_password);
 
-                if (!password.equals(return_password)) // Double-check string comparisons
+                if (!success) // Double-check string comparisons
                 {
                     // Password is wrong, login fail
                     responseJsonObject.addProperty("status", "fail");
