@@ -8,11 +8,15 @@ import java.util.TreeMap;
 public class User {
 
     private final String username;
+    public boolean employee;
+    public boolean customer;
     public Map<String, Integer> cart = new TreeMap<>();
     public Map<String, String> parameters = new TreeMap<>();
 
     public User(String username) {
         this.username = username;
+        this.customer = false;
+        this.employee = false;
     }
 
     public void addParam(String key, String value) {
@@ -55,4 +59,18 @@ public class User {
         return this.cart;
     }
 
+    public void log_employee() {
+        this.employee = true;
+    }
+
+    public boolean is_employee() {
+        return this.employee;
+    }
+
+    public void log_customer() {
+        this.customer = true;
+    }
+    public boolean is_customer() {
+        return this.customer;
+    }
 }

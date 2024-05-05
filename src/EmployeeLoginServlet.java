@@ -14,8 +14,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-@WebServlet(name = "LoginServlet", urlPatterns = "/api/customer_login")
-public class LoginServlet extends HttpServlet {
+@WebServlet(name = "EmployeeServlet", urlPatterns = "/api/employee_login")
+public class EmployeeLoginServlet extends HttpServlet {
     private static final long serialVersionUID = 2L;
 
     // Create a dataSource which registered in web.xml
@@ -45,9 +45,12 @@ public class LoginServlet extends HttpServlet {
 
             String username = request.getParameter("username");
             String password = request.getParameter("password");
+            System.out.println(request.getRequestURL());
 
-            String query = "SELECT id, password FROM customers " +
+            String query = "SELECT password FROM employees " +
                     "where email = ?";
+
+            System.out.println(query);
 
             // Declare statement for stars_query
             PreparedStatement statement = conn.prepareStatement(query);
@@ -76,7 +79,7 @@ public class LoginServlet extends HttpServlet {
                     if (request.getSession().getAttribute("user") == null)
                         request.getSession().setAttribute("user", new User(username));
                     User user = (User) request.getSession().getAttribute("user");
-                    user.log_customer();
+                    user.log_employee();
 
                     responseJsonObject.addProperty("status", "success");
                     responseJsonObject.addProperty("message", "success");
@@ -105,8 +108,8 @@ public class LoginServlet extends HttpServlet {
                 response.setStatus(202);
             }
             else {
-            jsonObject.addProperty("errorMessage", e.getMessage());
-            // Log error to localhost log
+                jsonObject.addProperty("errorMessage", e.getMessage());
+                // Log error to localhost log
                 // Set response status to 500 (Internal Server Error)
                 response.setStatus(500);
             }
