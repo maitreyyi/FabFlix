@@ -11,6 +11,7 @@ import java.util.ArrayList;
 @WebFilter(filterName = "LoginFilter", urlPatterns = "/*")
 public class LoginFilter implements Filter {
     private final ArrayList<String> allowedURIs = new ArrayList<>();
+    private final ArrayList<String> employeeURIs = new ArrayList<>();
 
     /**
      * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain)
@@ -31,8 +32,22 @@ public class LoginFilter implements Filter {
 
         // Redirect to login page if the "user" attribute doesn't exist in session
         if (httpRequest.getSession().getAttribute("user") == null) {
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.html");
+            // If employee page, redirect to employee login
+            if (employee_page(httpRequest.getRequestURI())) {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/_dashboard/employee_login.html");
+            }
+            // If customer page, redirect to customer lgoin
+            else {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.html");
+            }
         } else {
+            User cur_user = (User) httpRequest.getSession().getAttribute("user");
+            if (employee_page(httpRequest.getRequestURI()) && !cur_user.is_employee()) {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/_dashboard/employee_login.html");
+            }
+            else if (!employee_page(httpRequest.getRequestURI()) && !cur_user.is_customer()){
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.html");
+            }
             chain.doFilter(request, response);
         }
     }
@@ -46,10 +61,19 @@ public class LoginFilter implements Filter {
         return allowedURIs.stream().anyMatch(requestURI.toLowerCase()::endsWith);
     }
 
+    private boolean employee_page(String requestURI) {
+        return employeeURIs.stream().anyMatch(requestURI.toLowerCase()::endsWith);
+    }
+
     public void init(FilterConfig fConfig) {
         allowedURIs.add("login.html");
         allowedURIs.add("login.js");
-        allowedURIs.add("api/login");
+        allowedURIs.add("api/customer_login");
+        allowedURIs.add("api/employee_login");
+
+        employeeURIs.add("dashboard.html");
+        employeeURIs.add("dashboard.js");
+        employeeURIs.add("api/dashboard");
     }
 
     public void destroy() {
