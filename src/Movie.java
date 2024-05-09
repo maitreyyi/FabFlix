@@ -40,11 +40,27 @@ public class Movie {
     }
 
     public void addGenre(String genre) {
-            this.genres.add(genre);
+        for (String g : genre.split(" "))
+            this.genres.add(g);
     }
 
     public List<String> getGenres() {
         return this.genres;
+    }
+
+    public String printMovie() {
+        String str = "Id: " + getId() + ", title: " + getTitle() +
+                     ", year: " + getYear() + ", director: " + getDirector();
+
+        str += ", genres: [";
+
+        for (String g : getGenres())
+        {
+            str += g +", ";
+        }
+        str += "]";
+
+        return str;
     }
 
 }

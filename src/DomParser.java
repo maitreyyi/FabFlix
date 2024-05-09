@@ -22,10 +22,14 @@ public class DomParser {
         parseMovieFile();
 
         // get each movie element and create a Movie object
-        parseDocument();
+        parseMovieDocument();
+
+        parseActorFile();
+        parseActorDocument();
 
         // iterate through the list and print the data
         printMovieData();
+        printStarsData();
 
     }
 
@@ -46,7 +50,24 @@ public class DomParser {
         }
     }
 
-    private void parseDocument() {
+    private void parseActorFile() {
+        // get the factory
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+
+        try {
+
+            // using factory get an instance of document builder
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+            // parse using builder to get DOM representation of the XML file
+            dom = documentBuilder.parse("actors63.xml");
+
+        } catch (ParserConfigurationException | SAXException | IOException error) {
+            error.printStackTrace();
+        }
+    }
+
+    private void parseMovieDocument() {
         // get the document root Element
         Element documentElement = dom.getDocumentElement();
 
@@ -58,6 +79,23 @@ public class DomParser {
             Element element = (Element) nodeList.item(i);
 
             parseDirectorFilms(element);
+        }
+    }
+    private void parseActorDocument() {
+        // get the document root Element
+        Element documentElement = dom.getDocumentElement();
+
+        // get a nodelist of movie Elements, parse each into Movie object
+        NodeList nodeList = documentElement.getElementsByTagName("actor");
+        for (int i = 0; i < nodeList.getLength(); i++) {
+
+            // get the movie element
+            Element element = (Element) nodeList.item(i);
+
+            Star star = parseActor(element);
+            if (star != null) {
+                stars.add(star);
+            }
         }
     }
 
@@ -121,7 +159,23 @@ public class DomParser {
         }
 
         // create a new Movie with the value read from the xml nodes
-        return new Movie(title, id, year, director);
+        return movie;
+    }
+
+    private Star parseActor(Element actor) {
+        // Get actor name
+        String name = getTextValue(actor, "stagename");
+        if (name == null)
+        {
+            System.out.println("Actor has invalid id");
+            return null;
+        }
+
+        // Get date of birth
+        int dob = getIntValue(actor, "dob");
+
+        // create a new Star with values read from xml nodes
+        return new Star(name, dob);
     }
 
     /**
@@ -165,6 +219,11 @@ public class DomParser {
 
         System.out.println("Total parsed " + movies.size() + " movies");
     }
+    private void printStarsData() {
+
+        System.out.println("Total parsed " + stars.size() + " stars");
+    }
+
 
     public static void main(String[] args) {
         // create an instance
