@@ -14,26 +14,31 @@ public class DomParser {
 
     List<Movie> movies = new ArrayList<>();
     List<Star> stars = new ArrayList<>();
+    List<Cast> casts = new ArrayList<>();
     Document dom;
 
     public void runParser() {
 
         // parse the xml file and get the dom object
-        parseMovieFile();
+        parseFile("mains243.xml");
 
         // get each movie element and create a Movie object
         parseMovieDocument();
 
-        parseActorFile();
+        parseFile("actors63.xml");
         parseActorDocument();
+
+        parseFile("casts124.xml");
+        parseCastDocument();
 
         // iterate through the list and print the data
         printMovieData();
         printStarsData();
+        printCastData();
 
     }
 
-    private void parseMovieFile() {
+    private void parseFile(String uri) {
         // get the factory
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
@@ -43,24 +48,7 @@ public class DomParser {
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 
             // parse using builder to get DOM representation of the XML file
-            dom = documentBuilder.parse("mains243.xml");
-
-        } catch (ParserConfigurationException | SAXException | IOException error) {
-            error.printStackTrace();
-        }
-    }
-
-    private void parseActorFile() {
-        // get the factory
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-
-        try {
-
-            // using factory get an instance of document builder
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
-            // parse using builder to get DOM representation of the XML file
-            dom = documentBuilder.parse("actors63.xml");
+            dom = documentBuilder.parse(uri);
 
         } catch (ParserConfigurationException | SAXException | IOException error) {
             error.printStackTrace();
@@ -81,6 +69,7 @@ public class DomParser {
             parseDirectorFilms(element);
         }
     }
+
     private void parseActorDocument() {
         // get the document root Element
         Element documentElement = dom.getDocumentElement();
@@ -96,6 +85,21 @@ public class DomParser {
             if (star != null) {
                 stars.add(star);
             }
+        }
+    }
+
+    private void parseCastDocument() {
+        // get the document root Element
+        Element documentElement = dom.getDocumentElement();
+
+        // get a nodelist of movie Elements, parse each into Movie object
+        NodeList nodeList = documentElement.getElementsByTagName("dirfilms");
+        for (int i = 0; i < nodeList.getLength(); i++) {
+
+            // get the movie element
+            Element element = (Element) nodeList.item(i);
+
+            parseCastInFilm(element);
         }
     }
 
@@ -118,8 +122,6 @@ public class DomParser {
                 movies.add(movie);
             }
         }
-
-
     }
 
     /**
@@ -178,6 +180,46 @@ public class DomParser {
         return new Star(name, dob);
     }
 
+    private void parseCastInFilm(Element dirfilms) {
+        // Make each movie element
+        NodeList nodeList = dirfilms.getElementsByTagName("filmc");
+        for (int i = 0; i < nodeList.getLength(); i++) {
+
+            // get the movie element
+            Element element = (Element) nodeList.item(i);
+
+            // get the Cast object
+            Cast cast = parseCast(element);
+
+            // add it to list if movie is properly made
+            if (cast != null) {
+                casts.add(cast);
+            }
+        }
+
+    }
+
+    private Cast parseCast(Element element) {
+        NodeList nodeList = element.getElementsByTagName("m");
+
+        Element firstElem = (Element) nodeList.item(0);
+        String title = getTextValue(firstElem, "t");
+        if (title == null) {
+            return null;
+        }
+
+        Cast cast = new Cast(title);
+
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            String star = getTextValue(firstElem, "a");
+            if (star != null) {
+                cast.addStar(star);
+            }
+        }
+
+        return cast;
+    }
+
     /**
      * It takes an XML element and the tag name, look for the tag and get
      * the text content
@@ -222,6 +264,10 @@ public class DomParser {
     private void printStarsData() {
 
         System.out.println("Total parsed " + stars.size() + " stars");
+    }
+    private void printCastData() {
+
+        System.out.println("Total parsed " + casts.size() + " casts");
     }
 
 
