@@ -71,8 +71,8 @@ public class LoginFilter implements Filter {
         allowedURIs.add("api/customer_login");
         allowedURIs.add("api/employee_login");
 
-        employeeURIs.add("index.html");
-        employeeURIs.add("dashboard.js");
+        employeeURIs.add("_dashboard/index.html");
+        employeeURIs.add("_dashboard/dashboard.js");
         employeeURIs.add("api/dashboard");
     }
 
