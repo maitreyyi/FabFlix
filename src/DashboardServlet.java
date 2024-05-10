@@ -1,3 +1,4 @@
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -38,22 +39,57 @@ public class DashboardServlet extends HttpServlet {
 
         try (Connection conn = dataSource.getConnection()) {
 
-            String query = "SELECT password FROM employees " +
-                    "where email = ?";
+            System.out.println("Populating json array with table data");
 
-            System.out.println(query);
+            String tables_query = "SELECT DISTINCT TABLE_NAME " +
+                                 "FROM INFORMATION_SCHEMA.COLUMNS " +
+                                 "WHERE TABLE_SCHEMA = 'moviedb'";
 
-            // Declare statement for stars_query
-            PreparedStatement statement = conn.prepareStatement(query);
-            // Perform the query
-            ResultSet rs = statement.executeQuery();
+            String table_query = "SELECT COLUMN_NAME, DATA_TYPE " +
+                                 "FROM INFORMATION_SCHEMA.COLUMNS " +
+                                 "WHERE TABLE_SCHEMA = 'moviedb' AND TABLE_NAME = ?";
 
-            JsonObject responseJsonObject = new JsonObject();
+            PreparedStatement statement = conn.prepareStatement(tables_query);
+            ResultSet tables_rs = statement.executeQuery();
+            JsonArray tableArray = new JsonArray();
 
+            while(tables_rs.next()){
+                JsonObject tableJsonObject = new JsonObject();
+
+                String table_name = tables_rs.getString("TABLE_NAME");
+                tableJsonObject.addProperty("table_name", table_name);
+
+                PreparedStatement table_statement = conn.prepareStatement(table_query);
+                table_statement.setString(1,table_name);
+
+                ResultSet table_rs    = table_statement.executeQuery();
+                JsonArray columnArray = new JsonArray();
+
+                while(table_rs.next()){
+                    JsonObject columnObject = new JsonObject();
+
+                    String column    = table_rs.getString("COLUMN_NAME");
+                    String data_type = table_rs.getString("DATA_TYPE");
+
+                    columnObject.addProperty("attribute", column);
+                    columnObject.addProperty("column_type", data_type);
+
+                    columnArray.add(columnObject);
+
+                }
+                tableJsonObject.add("columns", columnArray);
+                table_rs.close();
+
+                tableArray.add(tableJsonObject);
+            }
 
             statement.close();
-            rs.close();
-            out.write(responseJsonObject.toString());
+            tables_rs.close();
+           // out.write(tables.toString());
+
+            out.write(tableArray.toString());
+            // Set response status to 200 (OK)
+            response.setStatus(200);
 
         } catch (Exception e) {
             // Write error message JSON object to output
