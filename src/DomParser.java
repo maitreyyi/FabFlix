@@ -7,8 +7,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class DomParser {
 
@@ -106,6 +108,9 @@ public class DomParser {
     private void parseDirectorFilms(Element dirfilms) {
         // Get director id
         String dirName = getTextValue(dirfilms, "dirname");
+        if (dirName == null) {
+            dirName = "Unknown";
+        }
 
         // Make each movie element
         NodeList nodeList = dirfilms.getElementsByTagName("film");
@@ -144,8 +149,8 @@ public class DomParser {
 
         // If year is invalid, print out inconsistency
         if (year == -1) {
-            System.out.println("MovieID \"" + id + "\" has invalid year");
-            return null;
+            System.out.println("MovieID \"" + id + "\" has invalid year. Setting default: 9999");
+            year = 9999;
         }
 
         Movie movie = new Movie(title, id, year, director);
@@ -160,6 +165,10 @@ public class DomParser {
             }
         }
 
+        if (movie.noGenres()) {
+            movie.addGenre("NoGenre");
+        }
+
         // create a new Movie with the value read from the xml nodes
         return movie;
     }
@@ -169,7 +178,7 @@ public class DomParser {
         String name = getTextValue(actor, "stagename");
         if (name == null)
         {
-            System.out.println("Actor has invalid id");
+            System.out.println("Actor has invalid name");
             return null;
         }
 
@@ -270,12 +279,78 @@ public class DomParser {
         System.out.println("Total parsed " + casts.size() + " casts");
     }
 
+    private void insertValues(String jdbcURL) {
 
-    public static void main(String[] args) {
+        try {
+            Connection conn = DriverManager.getConnection(jdbcURL,"mytestuser", "My6$Password");
+
+            String movie_query = "INSERT INTO movies (id, title, year, director) " +
+                    "SELECT ?, ?, ?, ? " +
+                    "FROM DUAL " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM movies WHERE title = ? OR id = ?)";
+
+            String new_genre_query = "INSERT INTO genres (name) " +
+                    "SELECT ? " +
+                    "FROM DUAL " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM genres WHERE name = ?)";
+
+            String get_genre_query = "SELECT id FROM genres WHERE name = ?";
+
+            String genre_in_movie_query = "INSERT INTO genres_in_movies (genreId, movieId) " +
+                    "SELECT ?, ? " +
+                    "FROM DUAL " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM genres_in_movies WHERE genreId = ? AND movieId = ?)";
+
+            for (Movie m : movies) {
+                PreparedStatement statement = conn.prepareStatement(movie_query);
+                if (m.getId() != null) {
+                    statement.setString(1, m.getId());
+                    statement.setString(2, m.getTitle());
+                    statement.setInt(3, m.getYear());
+                    statement.setString(4, m.getDirector());
+                    statement.setString(5, m.getTitle());
+                    statement.setString(6, m.getId());
+                    // Perform the query
+                    if (statement.executeUpdate() > 0) {
+                        for (String g : m.getGenres()) {
+                            PreparedStatement genre_statement = conn.prepareStatement(new_genre_query);
+                            genre_statement.setString(1, g);
+                            genre_statement.setString(2, g);
+                            genre_statement.executeUpdate();
+
+                            genre_statement = conn.prepareStatement(get_genre_query);
+                            genre_statement.setString(1, g);
+                            ResultSet rs = genre_statement.executeQuery();
+                            rs.next();
+                            int genreId = rs.getInt("id");
+
+                            genre_statement = conn.prepareStatement(genre_in_movie_query);
+                            genre_statement.setInt(1, genreId);
+                            genre_statement.setString(2, m.getId());
+                            genre_statement.setInt(3, genreId);
+                            genre_statement.setString(4, m.getId());
+                        }
+                    }
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args)  throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         // create an instance
         DomParser domParserExample = new DomParser();
 
         // call run example
         domParserExample.runParser();
+
+        Class.forName("com.mysql.jdbc.Driver").newInstance();
+        String jdbcURL="jdbc:mysql://localhost:3306/testmoviedb";
+
+        // Insert values
+        domParserExample.insertValues(jdbcURL);
     }
 }

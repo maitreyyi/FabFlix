@@ -1,7 +1,40 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+
 
 public class Movie {
+
+    private static final Map<String, String> catCodes = new TreeMap<>();
+    static {
+        catCodes.put("Ctxx", "Uncategorized");
+        catCodes.put("Actn", "Violence");
+        catCodes.put("Camp", "Camp");
+        catCodes.put("Comd", "Comedy");
+        catCodes.put("Disa", "Disaster");
+        catCodes.put("Epic", "Epic");
+        catCodes.put("Horr", "Horror");
+        catCodes.put("Noir", "Black");
+        catCodes.put("ScFi", "Sci-Fi");
+        catCodes.put("West", "Western");
+        catCodes.put("Advt", "Adventure");
+        catCodes.put("Cart", "Cartoon");
+        catCodes.put("Docu", "Documentary");
+        catCodes.put("Musc", "Musical");
+        catCodes.put("Faml", "Family");
+        catCodes.put("Porn", "Pornography");
+        catCodes.put("Surl", "Sureal");
+        catCodes.put("AvGa", "Avant Garde");
+        catCodes.put("CnR", "Cops and Robbers");
+        catCodes.put("Dram", "Drama");
+        catCodes.put("Hist", "History");
+        catCodes.put("Myst", "Mystery");
+        catCodes.put("Romt", "Romance");
+        catCodes.put("Susp", "Thriller");
+        catCodes.put("NoGenre", "NoGenre");
+    }
 
     private final String title;
 
@@ -40,12 +73,19 @@ public class Movie {
     }
 
     public void addGenre(String genre) {
-        for (String g : genre.split(" "))
-            this.genres.add(g);
+        for (String g : genre.split(" ")) {
+            String g_name = catCodes.get(g);
+            if (g_name != null)
+                this.genres.add(g_name);
+        }
     }
 
     public List<String> getGenres() {
         return this.genres;
+    }
+
+    public boolean noGenres() {
+        return this.genres.isEmpty();
     }
 
     public String printMovie() {
