@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Random;
 
 @WebServlet(name = "AddStarServlet", urlPatterns = "/api/add-star")
@@ -38,40 +39,42 @@ public class AddStarServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
+        JsonObject responseJson = new JsonObject(); //store success/failure
 
         String star_name = request.getParameter("star_name");
         String year = request.getParameter("birthyear");
 
-
+        System.out.println("Star name: " +star_name);
+        System.out.println("Year: " + year);
         request.getServletContext().log("getting parameters: " + star_name);
 
         try(Connection conn = dataSource.getConnection()){
             String star_query = "SELECT id FROM stars WHERE name = ? AND birthYear = ?;";
 
-            String insert_statement = "DECLARE @star_id INT; " +
-                                    "SELECT MAX(CAST(SUBSTRING(id, 3) AS UNSIGNED)) + 1 INTO star_id FROM stars; " +
-                                    "IF star_id IS NULL THEN " +
-                                    "   SET star_id = 'nm0000001'; " +
-                                    "ELSE " +
-                                    "   SET star_id = CONCAT('nm', LPAD(star_id, 7, '0')); " +
-                                    "END IF; " +
-                                    "INSERT INTO stars (id, name, birthYear) VALUES (star_id, ?, ?); ";
-            //set birth year in star_id
-            PreparedStatement statement = conn.prepareStatement(star_query);
-            ResultSet star_rs           = statement.executeQuery();
+            String insert_statement = "call add_star(?, ?);";
 
-            JsonObject responseJson = new JsonObject(); //store success/failure
+            //set birth year & starname in star_query
+            PreparedStatement statement = conn.prepareStatement(star_query);
+
+            statement.setString(1,star_name);
+            statement.setString(2,year);
+
+            ResultSet star_rs = statement.executeQuery();
 
             if(!star_rs.next()){
                 //set birthyear and star_name in insert_statement if star_id == null
                 PreparedStatement insert_star = conn.prepareStatement(insert_statement);
+
                 insert_star.setString(1, star_name);
                 insert_star.setString(2,year);
+
                 insert_star.executeUpdate();
+                responseJson.addProperty("status", "Star: " + star_name + " added successfully");
 
                 insert_star.close();
             } else {
                 //update response to state star already exists (display id)
+                responseJson.addProperty("status", "Star: " + star_name + " already exists in database");
             }
             star_rs.close();
             statement.close();
@@ -83,6 +86,7 @@ public class AddStarServlet extends HttpServlet {
             // Write error message JSON object to output
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("errorMessage", e.getMessage());
+            //responseJson.addProperty("status", "Star: " + star_name + " could not be added");
             out.write(jsonObject.toString());
 
             // Log error to localhost log

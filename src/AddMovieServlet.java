@@ -48,7 +48,7 @@ public class AddMovieServlet extends HttpServlet {
         request.getServletContext().log("getting parameters: " + movie_title);
 
         try(Connection conn = dataSource.getConnection()){
-            String query = "{call add_movie(?, ?, ?, ?)}";
+            String query = "{call add_movie(?, ?, ?, ?) };";
         } catch (Exception e) {
             // Write error message JSON object to output
             JsonObject jsonObject = new JsonObject();

@@ -43,3 +43,21 @@ BEGIN
 	INSERT INTO genres_in_movies(genreId, movieId) VALUES(genre_id, movie_id);
 END //
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS add_star;
+
+DELIMITER //
+CREATE PROCEDURE add_star( IN star_name varchar(100), IN birth_year int)
+BEGIN
+	DECLARE star_id varchar(10);
+SELECT MAX(CAST(SUBSTRING(id, 3) AS UNSIGNED)) + 1 INTO star_id FROM stars;
+
+IF star_id IS NULL THEN
+		SET star_id = 'nm0000001';
+ELSE
+		SET star_id = CONCAT('nm', LPAD(star_id, 7, '0'));
+END IF;
+INSERT INTO stars (id, name, birthYear) VALUES (star_id, star_name, birth_year);
+END //
+DELIMITER ;
+

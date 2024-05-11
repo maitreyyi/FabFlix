@@ -80,6 +80,8 @@ public class LoginFilter implements Filter {
         employeeURIs.add("add_star.js");
         employeeURIs.add("dashboard.js");
         employeeURIs.add("api/dashboard");
+        employeeURIs.add("api/add-star");
+        employeeURIs.add("api/add-movie");
     }
 
     public void destroy() {
