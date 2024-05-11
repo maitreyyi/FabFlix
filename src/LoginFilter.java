@@ -74,6 +74,8 @@ public class LoginFilter implements Filter {
 
         employeeURIs.add("employee_index.html");
         employeeURIs.add("employee_index.js");
+        employeeURIs.add("add_movie.html");
+        employeeURIs.add("add_movie.js");
         employeeURIs.add("dashboard.js");
         employeeURIs.add("api/dashboard");
     }

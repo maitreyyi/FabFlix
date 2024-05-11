@@ -3,7 +3,6 @@
  * @param resultData jsonObject
  */
 
-console.log('inside employee employee_index.js');
 function handleResult(resultData) {
     let metaData = jQuery("#meta-data");
     let rowHTML = "";
