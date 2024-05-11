@@ -41,6 +41,7 @@ public class LoginFilter implements Filter {
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.html");
             }
         } else {
+            //user exists
             User cur_user = (User) httpRequest.getSession().getAttribute("user");
             if (employee_page(httpRequest.getRequestURI()) && !cur_user.is_employee()) {
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/_dashboard/employee_login.html");
@@ -72,6 +73,7 @@ public class LoginFilter implements Filter {
         allowedURIs.add("api/employee_login");
 
         employeeURIs.add("employee_index.html");
+        employeeURIs.add("employee_index.js");
         employeeURIs.add("dashboard.js");
         employeeURIs.add("api/dashboard");
     }
