@@ -279,6 +279,13 @@ public class DomParser {
         System.out.println("Total parsed " + casts.size() + " casts");
     }
 
+    private String id_increment(String id) {
+        int number = Integer.parseInt(id.split("m")[1]);
+        number += 1;
+        String zeroed_str = String.format("%07d", number);
+        return "nm" + zeroed_str;
+    }
+
     private void insertValues(String jdbcURL) {
 
         try {
@@ -300,6 +307,27 @@ public class DomParser {
                     "SELECT ?, ? " +
                     "FROM DUAL " +
                     "WHERE NOT EXISTS (SELECT 1 FROM genres_in_movies WHERE genreId = ? AND movieId = ?)";
+
+            String get_max_string_id = "SELECT MAX(id) as id FROM stars";
+
+            String star_query = "INSERT INTO stars (id, name, birthyear) " +
+                    "SELECT ?, ?, ? " +
+                    "FROM DUAL " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM stars WHERE name = ? AND birthyear = ?)";
+
+            String star_no_year_query = "INSERT INTO stars (id, name) " +
+                    "SELECT ?, ? " +
+                    "FROM DUAL " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM stars WHERE name = ? AND birthyear IS NULL)";
+
+            String get_star_query = "SELECT id FROM stars WHERE name = ?";
+
+            String stars_in_movie_query = "INSERT INTO stars_in_movies (starId, movieId) " +
+                    "SELECT ?, ? " +
+                    "FROM DUAL " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM stars_in_movies WHERE starId = ? AND movieId = ?)";
+
+            String get_movie_query = "SELECT id FROM movies WHERE title = ?";
 
             for (Movie m : movies) {
                 PreparedStatement statement = conn.prepareStatement(movie_query);
@@ -329,10 +357,66 @@ public class DomParser {
                             genre_statement.setString(2, m.getId());
                             genre_statement.setInt(3, genreId);
                             genre_statement.setString(4, m.getId());
+
+                            rs.close();
+                            genre_statement.close();
                         }
                     }
                 }
+                statement.close();
 
+            }
+
+            for (Star s : stars) {
+                PreparedStatement statement = conn.prepareStatement(get_max_string_id);
+                ResultSet rs = statement.executeQuery();
+                rs.next();
+                String starid = id_increment(rs.getString("id"));
+
+                if (s.getDob() != -1) {
+                    statement = conn.prepareStatement(star_query);
+                    statement.setInt(3, s.getDob());
+                    statement.setString(4, s.getName());
+                    statement.setInt(5, s.getDob());
+                } else {
+                    statement = conn.prepareStatement(star_no_year_query);
+                    statement.setString(3, s.getName());
+                }
+                statement.setString(1, starid);
+                statement.setString(2, s.getName());
+                statement.executeUpdate();
+
+                statement.close();
+                rs.close();
+            }
+
+            for (Cast c : casts) {
+                PreparedStatement statement = conn.prepareStatement(get_movie_query);
+                statement.setString(1, c.getTitle());
+
+                ResultSet rs = statement.executeQuery();
+                if (rs.next()) {
+                    String movieid = rs.getString("id");
+
+                    for (String s : c.getStars()) {
+                        statement = conn.prepareStatement(get_star_query);
+                        statement.setString(1, s);
+
+                        rs = statement.executeQuery();
+                        if (rs.next()) {
+                            String starid = id_increment(rs.getString("id"));
+
+                            statement = conn.prepareStatement(stars_in_movie_query);
+                            statement.setString(1, starid);
+                            statement.setString(2, movieid);
+                            statement.setString(3, starid);
+                            statement.setString(4, movieid);
+                            statement.executeUpdate();
+                        }
+                    }
+                }
+                statement.close();
+                rs.close();
             }
 
         } catch (SQLException e) {
