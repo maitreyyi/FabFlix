@@ -8,7 +8,7 @@ function handleLoginResult(resultData) {
     console.log("handle login response");
     console.log(resultData["status"]);
 
-    // If login succeeds, it will redirect the user to index.html
+    // If login succeeds, it will redirect the user to employee_index.html
     if (resultData["status"] === "success") {
         window.location.replace("index.html");
     } else {

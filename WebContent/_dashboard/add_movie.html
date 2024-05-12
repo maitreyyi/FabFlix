@@ -1,0 +1,48 @@
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    </head>
+
+    <body>
+        <div class="modal modal-sheet position-static d-block bg-body-secondary p-4 py-md-5" tabindex="-1" role="dialog" id="modalSignin">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content rounded-4 shadow">
+                    <div class="modal-header p-5 pb-4 border-bottom-0">
+                        <h1 class="fw-bold mb-0 fs-2">Add a Movie</h1>
+                    </div>
+
+                    <div class="modal-body p-5 pt-0">
+                        <form id = "add_movie" method="post" action="#">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control rounded-3" name="movie_title" placeholder="The Terminal" fdprocessedid="1gbfxe">
+                                <label>Title</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="number" class="form-control rounded-3" name="movie_year" placeholder="2003" fdprocessedid="1gbfxe">
+                                <label>Year</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control rounded-3" name="movie_director" placeholder="Steven Spielberg" fdprocessedid="1gbfxe">
+                                <label>Director</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control rounded-3" name="movie_star" placeholder="Tom Hanks" fdprocessedid="1gbfxe">
+                                <label>Star name</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control rounded-3" name="movie_genre" placeholder="Romance" fdprocessedid="1gbfxe">
+                                <label>Genre name</label>
+                            </div>
+                            <button class="w-100 mb-2 btn btn-lg rounded-3 btn-primary" type="submit" fdprocessedid="t262fi">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div id = "add-movie-msg" style = "display: none; position: fixed; bottom: 50px; left: 40%; color: white; padding: 15px; background-color: rgba(0, 0, 0, 0.75);"></div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src = "./add_movie.js" ></script>
+    </body>
+</html>

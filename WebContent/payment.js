@@ -11,7 +11,7 @@ function handleLoginResult(resultData) {
     console.log("handle payment response");
     console.log(resultData["status"]);
 
-    // If login succeeds, it will redirect the user to index.html
+    // If login succeeds, it will redirect the user to employee_index.html
     if (resultData["status"] === "success") {
         window.location.replace("order-placed.html");
     } else {

@@ -41,6 +41,7 @@ public class LoginFilter implements Filter {
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/login.html");
             }
         } else {
+            //user exists
             User cur_user = (User) httpRequest.getSession().getAttribute("user");
             if (employee_page(httpRequest.getRequestURI()) && !cur_user.is_employee()) {
                 httpResponse.sendRedirect(httpRequest.getContextPath() + "/_dashboard/employee_login.html");
@@ -71,9 +72,16 @@ public class LoginFilter implements Filter {
         allowedURIs.add("api/customer_login");
         allowedURIs.add("api/employee_login");
 
-        employeeURIs.add("_dashboard/index.html");
-        employeeURIs.add("_dashboard/dashboard.js");
+        employeeURIs.add("employee_index.html");
+        employeeURIs.add("employee_index.js");
+        employeeURIs.add("add_movie.html");
+        employeeURIs.add("add_movie.js");
+        employeeURIs.add("add_star.html");
+        employeeURIs.add("add_star.js");
+        employeeURIs.add("dashboard.js");
         employeeURIs.add("api/dashboard");
+        employeeURIs.add("api/add-star");
+        employeeURIs.add("api/add-movie");
     }
 
     public void destroy() {
