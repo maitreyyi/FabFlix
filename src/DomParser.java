@@ -18,7 +18,7 @@ public class DomParser {
     // Set up lists
     TreeMap<String, Movie> movies = new TreeMap<>(); // <id, Movie>
     List<Star> stars = new ArrayList<>();
-    TreeMap<String, Cast> casts = new TreeMap<>();
+    TreeMap<String, Cast> casts = new TreeMap<>(); // <id, Cast>
     List<String> genres = new ArrayList<>();
 
     // Set up inconsistency counters
@@ -381,9 +381,7 @@ public class DomParser {
 
             // Set up queries
             String movie_query = "INSERT INTO movies (id, title, year, director) " +
-                    "SELECT ?, ?, ?, ? " +
-                    "FROM DUAL " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM movies WHERE title = ? OR id = ?)";
+                    "VALUES (?, ?, ?, ?) ";
 
             String new_genre_query = "INSERT INTO genres (name) " +
                     "SELECT ? " +
@@ -392,10 +390,8 @@ public class DomParser {
 
             String get_genre_query = "SELECT id FROM genres WHERE name = ?";
 
-            String genre_in_movie_query = "INSERT INTO genres_in_movies (genreId, movieId) " +
-                    "SELECT ?, ? " +
-                    "FROM DUAL " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM genres_in_movies WHERE genreId = ? AND movieId = ?)";
+            String genre_in_movie_query = "INSERT IGNORE INTO genres_in_movies (genreId, movieId) " +
+                    "SELECT ?, ? ";
 
             String get_max_string_id = "SELECT MAX(id) as id FROM stars";
 
@@ -411,10 +407,8 @@ public class DomParser {
 
             String get_star_query = "SELECT id FROM stars WHERE name = ?";
 
-            String stars_in_movie_query = "INSERT INTO stars_in_movies (starId, movieId) " +
-                    "SELECT ?, ? " +
-                    "FROM DUAL " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM stars_in_movies WHERE starId = ? AND movieId = ?)";
+            String stars_in_movie_query = "INSERT IGNORE INTO stars_in_movies (starId, movieId) " +
+                    "SELECT ?, ? ";
 
             // Create genre statement
             PreparedStatement genreStatement = conn.prepareStatement(new_genre_query);
@@ -438,58 +432,54 @@ public class DomParser {
             PreparedStatement insertBatch = conn.prepareStatement(genre_in_movie_query);
             genreStatement = conn.prepareStatement(get_genre_query);
 
-//            for (Movie m : movies.values()) {
-//                // Insert movie
-//                PreparedStatement statement = conn.prepareStatement(movie_query);
-//                if (m.getId() != null) {
-//                    statement.setString(1, m.getId());
-//                    statement.setString(2, m.getTitle());
-//                    statement.setInt(3, m.getYear());
-//                    statement.setString(4, m.getDirector());
-//                    statement.setString(5, m.getTitle());
-//                    statement.setString(6, m.getId());
-//
-//                    // Perform the query
-//                    if (statement.executeUpdate() > 0) {
-//                        // If the movie was inserted, insert its genres
-//                        for (String g : m.getGenres()) {
-//                            genreStatement.setString(1, g);
-//                            ResultSet rs = genreStatement.executeQuery();
-//                            // Get genreId
-//                            if (rs.next()) {
-//                                int genreId = rs.getInt("id");
-//
-//                                // Insert batch
-//                                insertBatch.setInt(1, genreId);
-//                                insertBatch.setString(2, m.getId());
-//                                insertBatch.setInt(3, genreId);
-//                                insertBatch.setString(4, m.getId());
-//                                insertBatch.addBatch();
-//                                insertCount++;
-//
-//                                // If at 2000, run transaction
-//                                if (insertCount >= 2000) {
-//                                    insertBatch.executeBatch();
-//                                    conn.commit();
-//                                    insertCount = 0;
-//                                }
-//
-//                            }
-//                            rs.close();
-//                        }
-//                    }
-//                }
-//                // If remaining, run transaction
-//                if (insertCount > 0) {
-//                    insertBatch.executeBatch();
-//                    conn.commit();
-//                    insertCount = 0;
-//                }
-//
-//                statement.close();
-//            }
-//            genreStatement.close();
-//            insertBatch.close();
+            for (Movie m : movies.values()) {
+                // Insert movie
+                PreparedStatement statement = conn.prepareStatement(movie_query);
+                if (m.getId() != null) {
+                    statement.setString(1, m.getId());
+                    statement.setString(2, m.getTitle());
+                    statement.setInt(3, m.getYear());
+                    statement.setString(4, m.getDirector());
+
+                    // Perform the query
+                    if (statement.executeUpdate() > 0) {
+                        // If the movie was inserted, insert its genres
+                        for (String g : m.getGenres()) {
+                            genreStatement.setString(1, g);
+                            ResultSet rs = genreStatement.executeQuery();
+                            // Get genreId
+                            if (rs.next()) {
+                                int genreId = rs.getInt("id");
+
+                                // Insert batch
+                                insertBatch.setInt(1, genreId);
+                                insertBatch.setString(2, m.getId());
+                                insertBatch.addBatch();
+                                insertCount++;
+
+                                // If at 2000, run transaction
+                                if (insertCount >= 2000) {
+                                    insertBatch.executeBatch();
+                                    conn.commit();
+                                    insertCount = 0;
+                                }
+
+                            }
+                            rs.close();
+                        }
+                    }
+                }
+                // If remaining, run transaction
+                if (insertCount > 0) {
+                    insertBatch.executeBatch();
+                    conn.commit();
+                    insertCount = 0;
+                }
+
+                statement.close();
+            }
+            genreStatement.close();
+            insertBatch.close();
 //
 //            System.out.println("Doing stars");
 //            // Create stars statements
@@ -567,18 +557,15 @@ public class DomParser {
                         String movie = "SELECT * FROM movies WHERE id=?";
                         PreparedStatement man = conn.prepareStatement(movie);
                         man.setString(1, c.getId());
-                        if (!man.executeQuery().next())
+                        if (!man.executeQuery().next()) {
                             System.out.println(c.getId() + " Not found" + starid);
-
-                        if (c.getId().equals("BLe12"))
-                            System.out.println("Fucker: " + c.getId() + " and" + starid);
+                            break;
+                        }
 
                         // Add star_in_movie to batch
                         try {
                             starInMovieStatement.setString(1, starid);
                             starInMovieStatement.setString(2, c.getId());
-                            starInMovieStatement.setString(3, starid);
-                            starInMovieStatement.setString(4, c.getId());
                             starInMovieStatement.addBatch();
                         insertCount++;
 
@@ -593,7 +580,7 @@ public class DomParser {
                             System.out.println(e.getMessage());
                             what = 1;
                         }
-                        if (what == 1 && insertCount == 1000)
+                        if (what == 1 && insertCount == 1)
                             throw new RuntimeException();
                     }
                 }
