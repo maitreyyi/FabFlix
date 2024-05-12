@@ -283,13 +283,13 @@ public class DomParser {
         for (int i = 0; i < nodeList.getLength(); i++) {
             String movieId = getTextValue((Element)nodeList.item(i), "f");
             if (!movies.containsKey(movieId)) {
-//                System.out.println("MovieID \"" + movieId + "\" does not exist");
+                System.out.println("MovieID \"" + movieId + "\" does not exist");
                 movieNotFound++;
                 return;
             }
             String star = getTextValue((Element)nodeList.item(i), "a");
-            if (star != null && !findStar(star)) {
-//                System.out.println("Star " + star + " does not exist");
+            if (star != null && !findStar(star) && !starIdHash.containsKey(star)) {
+                System.out.println("Star " + star + " does not exist");
                 starNotFound++;
                 continue;
             }
@@ -409,7 +409,6 @@ public class DomParser {
 
             while (rs.next()) {
                 starHash.put(rs.getString("name")+rs.getString("birthyear"), rs.getString("id"));
-                starIdHash.put(rs.getString("name"), rs.getString("id"));
             }
 
         } catch (SQLException e) {
@@ -443,7 +442,7 @@ public class DomParser {
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                starHash.put(rs.getString("name"), rs.getString("id"));
+                genreHash.put(rs.getString("name"), rs.getInt("id"));
             }
 
         } catch (SQLException e) {
@@ -497,6 +496,8 @@ public class DomParser {
             PreparedStatement genreStatement = conn.prepareStatement(new_genre_query);
             conn.setAutoCommit(false);
 
+            System.out.println("Parsing genres");
+
             // Add genres to batch
             for (String g : genres) {
                 genreStatement.setString(1, g);
@@ -506,8 +507,8 @@ public class DomParser {
             genreStatement.executeBatch();
             conn.commit();
             genreStatement.close();
-            System.out.println("genres done");
 
+            System.out.println("Parsing movies");
 
             // Create genre_in_movie statements
             int insertCount = 0;
@@ -517,7 +518,7 @@ public class DomParser {
             for (Movie m : movies.values()) {
                 // Insert movie
                 PreparedStatement statement = conn.prepareStatement(movie_query);
-                PreparedStatement ratingS   = conn.prepareStatement(rating_query);
+                PreparedStatement ratingS = conn.prepareStatement(rating_query);
 
                 if (m.getId() != null) {
                     statement.setString(1, m.getId());
@@ -529,12 +530,11 @@ public class DomParser {
                     // Perform the query
                     if (statement.executeUpdate() > 0) {
                         //if movie was inserted, insert rating
-                        System.out.println("Adding movie to ratings table: " + m.getId());
-
                         ratingS.setString(1,m.getId());
                         ratingS.setFloat(2,0);
                         ratingS.setInt(3,0);
                         ratingS.addBatch();
+                        insertCount++;
 
                         // If the movie was inserted, insert its genres
                         for (String g : m.getGenres()) {
@@ -553,6 +553,7 @@ public class DomParser {
                                 // If at 2000, run transaction
                                 if (insertCount >= 2000) {
                                     insertBatch.executeBatch();
+                                    ratingS.executeBatch();
                                     conn.commit();
                                     insertCount = 0;
                                 }
@@ -560,13 +561,12 @@ public class DomParser {
                             }
                             rs.close();
                         }
-                        ratingS.executeBatch();
-                        conn.commit();
                     }
                 }
                 // If remaining, run transaction
                 if (insertCount > 0) {
                     insertBatch.executeBatch();
+                    ratingS.executeBatch();
                     conn.commit();
                     insertCount = 0;
                 }
@@ -637,25 +637,21 @@ public class DomParser {
 
             for (Cast c : casts.values()) {
                 for (String s : c.getStars()) {
-                    // Get star name
-//                    getStarStatement.setString(1, s);
+                    // Get starId
+                    starid = starIdHash.get(s);
 
+                    // Add star_in_movie to batch
+                    starInMovieStatement.setString(1, starid);
+                    starInMovieStatement.setString(2, c.getId());
+                    starInMovieStatement.addBatch();
+                    insertCount++;
 
-                        // Get starId
-                        starid = starIdHash.get(s);
-
-                        // Add star_in_movie to batch
-                        starInMovieStatement.setString(1, starid);
-                        starInMovieStatement.setString(2, c.getId());
-                        starInMovieStatement.addBatch();
-                        insertCount++;
-
-                        // If at 2000, run transaction
-                        if (insertCount >= 2000) {
-                            starInMovieStatement.executeBatch();
-                            conn.commit();
-                            insertCount = 0;
-                        }
+                    // If at 2000, run transaction
+                    if (insertCount >= 2000) {
+                        starInMovieStatement.executeBatch();
+                        conn.commit();
+                        insertCount = 0;
+                    }
 
                 }
             }
@@ -687,6 +683,7 @@ public class DomParser {
         // Set up hash
         domParserExample.setMovieMap(jdbcURL);
         domParserExample.setStarMap(jdbcURL);
+        domParserExample.setStarIdMap(jdbcURL);
         domParserExample.setGenreMap(jdbcURL);
 
         // call run example
