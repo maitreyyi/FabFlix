@@ -69,12 +69,24 @@ public class AddStarServlet extends HttpServlet {
                 insert_star.setString(2,year);
 
                 insert_star.executeUpdate();
-                responseJson.addProperty("status", "Star: " + star_name + " added successfully");
 
+                //find starId
+                PreparedStatement idStatement = conn.prepareStatement(star_query);
+
+                idStatement.setString(1,star_name);
+                idStatement.setString(2,year);
+
+                ResultSet rs = idStatement.executeQuery();
+
+                if(rs.next()){
+                    responseJson.addProperty("status", "Star: " + star_name + " added successfully. Star id: " + rs.getString("id"));
+                }
+
+                idStatement.close();
                 insert_star.close();
             } else {
                 //update response to state star already exists (display id)
-                responseJson.addProperty("status", "Star: " + star_name + " already exists in database");
+                responseJson.addProperty("status", "Star: " + star_name + " already exists in database. Star id: " + star_rs.getString("id") );
             }
             star_rs.close();
             statement.close();

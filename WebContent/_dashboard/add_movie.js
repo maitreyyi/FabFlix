@@ -8,7 +8,7 @@ function handleResult(resultData){
     msg.style.display = 'block';
 
     setTimeout(function() {
-        msg.style.display='none';}, 1700);
+        msg.style.display='none';}, 2100);
 }
 $(document).ready(function() {
     const form = document.getElementById("add_movie");
@@ -26,9 +26,6 @@ $(document).ready(function() {
         const star = formData.get("movie_star");
         const genre = formData.get("movie_genre");
 
-
-        console.log(title);
-        console.log(genre);
 
         jQuery.ajax({
             dataType: "json",  // Setting return data type

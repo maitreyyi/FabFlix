@@ -60,12 +60,33 @@ public class AddMovieServlet extends HttpServlet {
             statement.setString(5,movie_genre);
 
             statement.executeUpdate();
-            responseJson.addProperty("status", "Movie: " + movie_title + " added successfully");
+
+            //find movieid, starid, genreid that is generated
+            String query = "SELECT m.id, sim.starId, gim.genreId "+
+                           "FROM movies m, stars_in_movies sim, genres_in_movies gim " +
+                           "WHERE m.id = sim.movieId AND m.id = gim.movieId AND m.title = ? AND m.year = ? AND m.director = ? ";
+
+            PreparedStatement idStatement = conn.prepareStatement(query);
+
+            idStatement.setString(1,movie_title);
+            idStatement.setString(2,movie_year);
+            idStatement.setString(3,movie_director);
+
+            ResultSet rs = idStatement.executeQuery();
+            
+            if(rs.next()){
+                String movieId = rs.getString("id");
+                String starId  = rs.getString("starId");
+                String genreId = rs.getString("genreId");
+
+                responseJson.addProperty("status", "Success -> Movie id: " + movieId + " star id: " + starId + " genre id: " + genreId);
+            }
+
             out.write(responseJson.toString());
 
         } catch (Exception e) {
             // Write error message JSON object to output
-            responseJson.addProperty("status", "Movie was not added");
+            responseJson.addProperty("status", "Movie is a duplicate");
             out.write(responseJson.toString());
 
             // Log error to localhost log

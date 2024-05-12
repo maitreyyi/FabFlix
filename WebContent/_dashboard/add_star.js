@@ -8,7 +8,7 @@ function handleResult(resultData){
     msg.style.display = 'block';
 
     setTimeout(function() {
-        msg.style.display='none';}, 1700);
+        msg.style.display='none';}, 2100);
 }
 $(document).ready(function() {
     const form = document.getElementById("add_star");
