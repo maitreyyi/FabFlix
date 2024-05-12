@@ -10,7 +10,7 @@ public class Movie {
     private static final Map<String, String> catCodes = new TreeMap<>();
     static {
         catCodes.put("Ctxx", "Uncategorized");
-        catCodes.put("Actn", "Violence");
+        catCodes.put("Actn", "Action");
         catCodes.put("Camp", "Camp");
         catCodes.put("Comd", "Comedy");
         catCodes.put("Disa", "Disaster");
@@ -20,11 +20,11 @@ public class Movie {
         catCodes.put("ScFi", "Sci-Fi");
         catCodes.put("West", "Western");
         catCodes.put("Advt", "Adventure");
-        catCodes.put("Cart", "Cartoon");
+        catCodes.put("Cart", "Animation");
         catCodes.put("Docu", "Documentary");
         catCodes.put("Musc", "Musical");
         catCodes.put("Faml", "Family");
-        catCodes.put("Porn", "Pornography");
+        catCodes.put("Porn", "Adult");
         catCodes.put("Surl", "Sureal");
         catCodes.put("AvGa", "Avant Garde");
         catCodes.put("CnR", "Cops and Robbers");

@@ -6,6 +6,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -29,14 +30,14 @@ public class DomParser {
     int starDup = 0;
     int starNotFound = 0;
 
-    String dbURL;
+    TreeMap<String, String> movieHash = new TreeMap<String, String>();
+    TreeMap<String, String> starHash = new TreeMap<String, String>();
+    TreeMap<String, String> starIdHash = new TreeMap<String, String>();
+    TreeMap<String, Integer> genreHash = new TreeMap<String, Integer>();
 
 
     Document dom;
 
-    public DomParser(String jdbcURL) {
-        dbURL = jdbcURL;
-    }
 
     public void runParser() {
 
@@ -171,6 +172,24 @@ public class DomParser {
             movieYear++;
         }
 
+        if (movies.containsKey(id)) {
+            System.out.println("MovieId \"" + id + "\" is already used");
+            movieInconsistent++;
+            return;
+        }
+
+        if (movieHash.containsKey(title+director+year)) {
+            System.out.println("Movie \"" + title + "\" is duplicate");
+            movieDup++;
+            return;
+        }
+
+        if (movieIsDupe(director, title, year)) {
+            System.out.println("Movie \"" + title + "\" is duplicate");
+            movieDup++;
+            return;
+        }
+
         Movie movie = new Movie(title, id, year, director);
 
         NodeList nodeList = element.getElementsByTagName("cats");
@@ -190,21 +209,9 @@ public class DomParser {
 
         // Add any new genres to genre list
         for (String g : movie.getGenres()) {
-            if (!genres.contains(g)) {
+            if (!genres.contains(g) && !genreHash.containsKey(g)) {
                 genres.add(g);
             }
-        }
-
-        // add it to list if movie is properly made
-        if (movies.containsKey(id)) {
-            System.out.println("MovieId \"" + id + "\" is already used");
-            movieInconsistent++;
-            return;
-        }
-        if (movieIsDupe(director, title, year)) {
-            System.out.println("Movie \"" + title + "\" is duplicate");
-            movieDup++;
-            return;
         }
 
         movies.put(id, movie);
@@ -226,6 +233,14 @@ public class DomParser {
         if (starIsDupe(name, dob)) {
             System.out.println(name + " is a duplicate");
             starDup++;
+            return;
+        }
+        String key = name;
+        key += (dob == -1) ? (null) : (dob);
+        if (starHash.containsKey(key)) {
+            System.out.println(name + " is a duplicate");
+            starDup++;
+            return;
         }
         Star star = new Star(name, dob);
         stars.add(star);
@@ -268,14 +283,15 @@ public class DomParser {
         for (int i = 0; i < nodeList.getLength(); i++) {
             String movieId = getTextValue((Element)nodeList.item(i), "f");
             if (!movies.containsKey(movieId)) {
-                System.out.println("MovieID \"" + movieId + "\" does not exist");
+//                System.out.println("MovieID \"" + movieId + "\" does not exist");
                 movieNotFound++;
                 return;
             }
             String star = getTextValue((Element)nodeList.item(i), "a");
-            if (star != null && findStar(star)) {
-                System.out.println("Star " + star + " does not exist");
+            if (star != null && !findStar(star)) {
+//                System.out.println("Star " + star + " does not exist");
                 starNotFound++;
+                continue;
             }
             if (star != null) {
                 cast.addStar(star);
@@ -365,6 +381,76 @@ public class DomParser {
         System.out.println(starNotFound + " stars not found in casts");
     }
 
+    private void setMovieMap(String jdbcURL) {
+        try {
+            // Create connection
+            Connection conn = DriverManager.getConnection(jdbcURL,"mytestuser", "My6$Password");
+            String query = "SELECT * FROM movies";
+            PreparedStatement statement = conn.prepareStatement(query);
+            ResultSet rs = statement.executeQuery();
+            int i = 0;
+
+            while (rs.next()) {
+                movieHash.put(rs.getString("title")+rs.getString("director")+rs.getInt("year"), rs.getString("id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setStarMap(String jdbcURL) {
+        try {
+            // Create connection
+            Connection conn = DriverManager.getConnection(jdbcURL,"mytestuser", "My6$Password");
+            String query = "SELECT * FROM stars";
+            PreparedStatement statement = conn.prepareStatement(query);
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                starHash.put(rs.getString("name")+rs.getString("birthyear"), rs.getString("id"));
+                starIdHash.put(rs.getString("name"), rs.getString("id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setStarIdMap(String jdbcURL) {
+        try {
+            // Create connection
+            Connection conn = DriverManager.getConnection(jdbcURL,"mytestuser", "My6$Password");
+            String query = "SELECT name, id FROM stars";
+            PreparedStatement statement = conn.prepareStatement(query);
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                starIdHash.put(rs.getString("name"), rs.getString("id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setGenreMap(String jdbcURL) {
+        try {
+            // Create connection
+            Connection conn = DriverManager.getConnection(jdbcURL,"mytestuser", "My6$Password");
+            String query = "SELECT * FROM genres";
+            PreparedStatement statement = conn.prepareStatement(query);
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                starHash.put(rs.getString("name"), rs.getString("id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private String id_increment(String id) {
         // Increment the id
         int number = Integer.parseInt(id.split("m")[1]);
@@ -380,13 +466,11 @@ public class DomParser {
             Connection conn = DriverManager.getConnection(jdbcURL,"mytestuser", "My6$Password");
 
             // Set up queries
-            String movie_query = "INSERT INTO movies (id, title, year, director) " +
+            String movie_query = "INSERT IGNORE INTO movies (id, title, year, director) " +
                     "VALUES (?, ?, ?, ?) ";
 
             String new_genre_query = "INSERT INTO genres (name) " +
-                    "SELECT ? " +
-                    "FROM DUAL " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM genres WHERE name = ?)";
+                    "SELECT ? ";
 
             String get_genre_query = "SELECT id FROM genres WHERE name = ?";
 
@@ -396,16 +480,12 @@ public class DomParser {
             String get_max_string_id = "SELECT MAX(id) as id FROM stars";
 
             String star_query = "INSERT INTO stars (id, name, birthyear) " +
-                    "SELECT ?, ?, ? " +
-                    "FROM DUAL " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM stars WHERE name = ? AND birthyear = ?)";
+                    "VALUES (?, ?, ?) ";
 
             String star_no_year_query = "INSERT INTO stars (id, name) " +
-                    "SELECT ?, ? " +
-                    "FROM DUAL " +
-                    "WHERE NOT EXISTS (SELECT 1 FROM stars WHERE name = ? AND birthyear IS NULL)";
+                    "VALUES (?, ?) ";
 
-            String get_star_query = "SELECT id FROM stars WHERE name = ?";
+            String get_star_query = "SELECT id FROM stars WHERE name = ? LIMIT 1";
 
             String stars_in_movie_query = "INSERT IGNORE INTO stars_in_movies (starId, movieId) " +
                     "SELECT ?, ? ";
@@ -417,7 +497,6 @@ public class DomParser {
             // Add genres to batch
             for (String g : genres) {
                 genreStatement.setString(1, g);
-                genreStatement.setString(2, g);
                 genreStatement.addBatch();
             }
             // Execute genre insert
@@ -480,93 +559,80 @@ public class DomParser {
             }
             genreStatement.close();
             insertBatch.close();
-//
-//            System.out.println("Doing stars");
-//            // Create stars statements
-//            PreparedStatement starsYearBatch = conn.prepareStatement(star_query);
-//            PreparedStatement starsNoYearBatch = conn.prepareStatement(star_no_year_query);
-//            conn.setAutoCommit(false);
-//            insertCount = 0;
-//
-//            // Get max starId
+
+            System.out.println("Doing stars");
+            // Create stars statements
+            PreparedStatement starsYearBatch = conn.prepareStatement(star_query);
+            PreparedStatement starsNoYearBatch = conn.prepareStatement(star_no_year_query);
+            insertCount = 0;
+
+            // Get max starId
             String starid = "nm0000000";
             PreparedStatement statement = conn.prepareStatement(get_max_string_id);
             ResultSet rs = statement.executeQuery();
-//            conn.commit();
-//
-//            rs.next();
-//            if (rs.getString("id") != null) {
-//                starid = rs.getString("id");
-//            }
-//            statement.close();
-//            rs.close();
-//
-//            for (Star s : stars) {
-//                starid = id_increment(starid);
-//
-//                // Check birthyear, use corresponding insert
-//                if (s.getDob() != -1) {
-//                    starsYearBatch.setString(1, starid);
-//                    starsYearBatch.setString(2, s.getName());
-//                    starsYearBatch.setInt(3, s.getDob());
-//                    starsYearBatch.setString(4, s.getName());
-//                    starsYearBatch.setInt(5, s.getDob());
-//                    starsYearBatch.addBatch();
-//                } else {
-//                    starsNoYearBatch.setString(1, starid);
-//                    starsNoYearBatch.setString(2, s.getName());
-//                    starsNoYearBatch.setString(3, s.getName());
-//                    starsNoYearBatch.addBatch();
-//                }
-//                insertCount++;
-//
-//                // If at 2000, run transaction
-//                if (insertCount >= 2000) {
-//                    starsYearBatch.executeBatch();
-//                    starsNoYearBatch.executeBatch();
-//                    conn.commit();
-//                    insertCount = 0;
-//                }
-//            }
-//            // If remaining, run transaction
-//            if (insertCount > 0) {
-//                starsYearBatch.executeBatch();
-//                starsNoYearBatch.executeBatch();
-//                conn.commit();
-//                insertCount = 0;
-//            }
-//            starsYearBatch.close();
-//            starsNoYearBatch.close();
+            conn.commit();
+
+            rs.next();
+            if (rs.getString("id") != null) {
+                starid = rs.getString("id");
+            }
+            statement.close();
+            rs.close();
+
+            for (Star s : stars) {
+                starid = id_increment(starid);
+
+                // Check birthyear, use corresponding insert
+                if (s.getDob() != -1) {
+                    starsYearBatch.setString(1, starid);
+                    starsYearBatch.setString(2, s.getName());
+                    starsYearBatch.setInt(3, s.getDob());
+                    starsYearBatch.addBatch();
+                } else {
+                    starsNoYearBatch.setString(1, starid);
+                    starsNoYearBatch.setString(2, s.getName());
+                    starsNoYearBatch.addBatch();
+                }
+                insertCount++;
+
+                // If at 2000, run transaction
+                if (insertCount >= 2000) {
+                    starsYearBatch.executeBatch();
+                    starsNoYearBatch.executeBatch();
+                    conn.commit();
+                    insertCount = 0;
+                }
+            }
+            // If remaining, run transaction
+            if (insertCount > 0) {
+                starsYearBatch.executeBatch();
+                starsNoYearBatch.executeBatch();
+                conn.commit();
+                insertCount = 0;
+            }
+            starsYearBatch.close();
+            starsNoYearBatch.close();
+
+            setStarIdMap(jdbcURL);
 
             System.out.println("Doing cast");
             // Create stars_in_movies statemetns
             PreparedStatement getStarStatement = conn.prepareStatement(get_star_query);
             PreparedStatement starInMovieStatement = conn.prepareStatement(stars_in_movie_query);
-            int what = 0;
 
             for (Cast c : casts.values()) {
                 for (String s : c.getStars()) {
                     // Get star name
-                    getStarStatement.setString(1, s);
+//                    getStarStatement.setString(1, s);
 
-                    rs = getStarStatement.executeQuery();
-                    if (rs.next()) {
+
                         // Get starId
-                        starid = rs.getString("id");
-
-                        String movie = "SELECT * FROM movies WHERE id=?";
-                        PreparedStatement man = conn.prepareStatement(movie);
-                        man.setString(1, c.getId());
-                        if (!man.executeQuery().next()) {
-                            System.out.println(c.getId() + " Not found" + starid);
-                            break;
-                        }
+                        starid = starIdHash.get(s);
 
                         // Add star_in_movie to batch
-                        try {
-                            starInMovieStatement.setString(1, starid);
-                            starInMovieStatement.setString(2, c.getId());
-                            starInMovieStatement.addBatch();
+                        starInMovieStatement.setString(1, starid);
+                        starInMovieStatement.setString(2, c.getId());
+                        starInMovieStatement.addBatch();
                         insertCount++;
 
                         // If at 2000, run transaction
@@ -575,14 +641,7 @@ public class DomParser {
                             conn.commit();
                             insertCount = 0;
                         }
-                        } catch (Exception e) {
-                            System.out.println("." + c.getId() + " " + starid);
-                            System.out.println(e.getMessage());
-                            what = 1;
-                        }
-                        if (what == 1 && insertCount == 1)
-                            throw new RuntimeException();
-                    }
+
                 }
             }
             // If remaining, run transaction
@@ -605,10 +664,15 @@ public class DomParser {
     public static void main(String[] args)  throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         // Set db connection
         Class.forName("com.mysql.jdbc.Driver").newInstance();
-        String jdbcURL="jdbc:mysql://localhost:3306/testmoviedb";
+        String jdbcURL="jdbc:mysql://localhost:3306/moviedb";
 
         // create an instance
-        DomParser domParserExample = new DomParser(jdbcURL);
+        DomParser domParserExample = new DomParser();
+
+        // Set up hash
+        domParserExample.setMovieMap(jdbcURL);
+        domParserExample.setStarMap(jdbcURL);
+        domParserExample.setGenreMap(jdbcURL);
 
         // call run example
         domParserExample.runParser();
