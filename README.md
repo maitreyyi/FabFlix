@@ -1,8 +1,8 @@
-## CS 122B Project 2 FabFlix
+## CS 122B Project 3 FabFlix
 
 ### Demo: 
-1. Video URL: https://youtu.be/0bP6hQm2EJU
-2. URL to access: http://54.153.65.32:8080/cs122b-team-cs/
+1. Video URL: 
+2. URL to access: 
 
 ### Instructions to deploy Fablix: 
 1. Clone this repository using `git clone https://github.com/UCI-Chenli-teaching/cs122b-s24-team-cs.git'
@@ -20,13 +20,10 @@
 
 #### Maitreyi:
 
-1. Implemented search function and redirected to movie-list with specified parameters
-2. Worked on navigation bar and added into all pages
-3. Created shopping cart page that allows user to modify quantity, see the total price and proceed to checkout
-4. Added code for cart servlet that handled get/post requests
-5. Worked on jump functionality among pages
-6. Added add to cart options in movie-list and single movie pages with a notification upon success
-7. Helped debug issues we ran into when integrating all features together
+1. Created index page for employee dashboard and displayed meta data of all the tables in moviedb database
+2. Added add-star page and add-movie page with message of success/duplicate after communication with servlet
+3. Worked on stored-procedures for add-movie and add-star as well as the servlets
+4. Helped debug issues we ran into when integrating all features together
 
 ### Substring Matching:
 1. Starting characters -- LIKE "?%"
