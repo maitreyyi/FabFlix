@@ -469,6 +469,9 @@ public class DomParser {
             String movie_query = "INSERT IGNORE INTO movies (id, title, year, director) " +
                     "VALUES (?, ?, ?, ?) ";
 
+            String rating_query = "INSERT INTO ratings (movieId, rating, numVotes) " +
+                    "VALUES (?, ?, ?) ";
+
             String new_genre_query = "INSERT INTO genres (name) " +
                     "SELECT ? ";
 
@@ -514,14 +517,25 @@ public class DomParser {
             for (Movie m : movies.values()) {
                 // Insert movie
                 PreparedStatement statement = conn.prepareStatement(movie_query);
+                PreparedStatement ratingS   = conn.prepareStatement(rating_query);
+
                 if (m.getId() != null) {
                     statement.setString(1, m.getId());
                     statement.setString(2, m.getTitle());
                     statement.setInt(3, m.getYear());
                     statement.setString(4, m.getDirector());
 
+
                     // Perform the query
                     if (statement.executeUpdate() > 0) {
+                        //if movie was inserted, insert rating
+                        System.out.println("Adding movie to ratings table: " + m.getId());
+
+                        ratingS.setString(1,m.getId());
+                        ratingS.setFloat(2,0);
+                        ratingS.setInt(3,0);
+                        ratingS.addBatch();
+
                         // If the movie was inserted, insert its genres
                         for (String g : m.getGenres()) {
                             genreStatement.setString(1, g);
@@ -546,6 +560,8 @@ public class DomParser {
                             }
                             rs.close();
                         }
+                        ratingS.executeBatch();
+                        conn.commit();
                     }
                 }
                 // If remaining, run transaction
@@ -554,7 +570,6 @@ public class DomParser {
                     conn.commit();
                     insertCount = 0;
                 }
-
                 statement.close();
             }
             genreStatement.close();

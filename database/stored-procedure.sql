@@ -41,6 +41,9 @@ BEGIN
 		SET genre_id = LAST_INSERT_ID();
 	END IF;
 	INSERT INTO genres_in_movies(genreId, movieId) VALUES(genre_id, movie_id);
+    
+    -- ratings insert
+    INSERT IGNORE INTO ratings(movieId, rating, numVotes) VALUES(movie_id, 0, 0);
 END //
 DELIMITER ;
 
