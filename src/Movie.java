@@ -88,6 +88,10 @@ public class Movie {
         return this.genres.isEmpty();
     }
 
+    public boolean isEqual(String title, String director, int year) {
+        return this.title.equals(title) && this.director.equals(director) && this.year == year;
+    }
+
     public String printMovie() {
         String str = "Id: " + getId() + ", title: " + getTitle() +
                      ", year: " + getYear() + ", director: " + getDirector();

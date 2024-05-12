@@ -3,18 +3,18 @@ import java.util.List;
 
 public class Cast {
 
-    private final String title;
+    private final String id;
 
     public List<String> stars;
 
 
-    public Cast(String title) {
-        this.title = title;
+    public Cast(String id) {
+        this.id = id;
         this.stars = new ArrayList<>();
     }
 
-    public String getTitle() {
-        return this.title;
+    public String getId() {
+        return this.id;
     }
 
     public void addStar(String star) {
@@ -26,7 +26,7 @@ public class Cast {
     }
 
     public String printCast() {
-        String str = "Title: " + getTitle();
+        String str = "Id: " + getId();
 
         str += ", stars: [";
 

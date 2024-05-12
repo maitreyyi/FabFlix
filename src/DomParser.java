@@ -10,15 +10,33 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 
 public class DomParser {
 
-    List<Movie> movies = new ArrayList<>();
+    // Set up lists
+    TreeMap<String, Movie> movies = new TreeMap<>(); // <id, Movie>
     List<Star> stars = new ArrayList<>();
-    List<Cast> casts = new ArrayList<>();
+    TreeMap<String, Cast> casts = new TreeMap<>();
     List<String> genres = new ArrayList<>();
+
+    // Set up inconsistency counters
+    int movieDup = 0;
+    int movieInconsistent = 0;
+    int movieYear = 0;
+    int movieNotFound = 0;
+    int starDup = 0;
+    int starNotFound = 0;
+
+    String dbURL;
+
+
     Document dom;
+
+    public DomParser(String jdbcURL) {
+        dbURL = jdbcURL;
+    }
 
     public void runParser() {
 
@@ -35,10 +53,8 @@ public class DomParser {
         parseCastDocument();
 
         // iterate through the list and print the data
-        printMovieData();
-        printStarsData();
-        printCastData();
-        System.out.println(genres.size());
+        printData();
+        printInconsistencies();
     }
 
     private void parseFile(String uri) {
@@ -84,10 +100,7 @@ public class DomParser {
             // get the movie element
             Element element = (Element) nodeList.item(i);
 
-            Star star = parseActor(element);
-            if (star != null) {
-                stars.add(star);
-            }
+            parseActor(element);
         }
     }
 
@@ -121,12 +134,7 @@ public class DomParser {
             Element element = (Element) nodeList.item(i);
 
             // get the Movie object
-            Movie movie = parseMovie(element, dirName);
-
-            // add it to list if movie is properly made
-            if (movie != null) {
-                movies.add(movie);
-            }
+            parseMovie(element, dirName);
         }
     }
 
@@ -134,7 +142,7 @@ public class DomParser {
      * It takes an employee Element, reads the values in, creates
      * an Employee object for return
      */
-    private Movie parseMovie(Element element, String director) {
+    private void parseMovie(Element element, String director) {
         // for each <movies> element get text or int values of
         // title, id, year
         String id = getTextValue(element, "fid");
@@ -143,13 +151,15 @@ public class DomParser {
         // If title is invalid, print out inconsistency
         if (title == null) {
             System.out.println("MovieID \"" + id + "\" has invalid title");
-            return null;
+            movieInconsistent++;
+            return;
         }
 
         // If no id, print out inconsistency
         if (id == null || id.equals(" ")) {
             System.out.println("Movie \"" + title + "\" has no id");
-            return null;
+            movieInconsistent++;
+            return;
         }
 
         int year = getIntValue(element, "year");
@@ -158,6 +168,7 @@ public class DomParser {
         if (year == -1) {
             System.out.println("MovieID \"" + id + "\" has invalid year. Setting default: 9999");
             year = 9999;
+            movieYear++;
         }
 
         Movie movie = new Movie(title, id, year, director);
@@ -184,24 +195,40 @@ public class DomParser {
             }
         }
 
-        // create a new Movie with the value read from the xml nodes
-        return movie;
+        // add it to list if movie is properly made
+        if (movies.containsKey(id)) {
+            System.out.println("MovieId \"" + id + "\" is already used");
+            movieInconsistent++;
+            return;
+        }
+        if (movieIsDupe(director, title, year)) {
+            System.out.println("Movie \"" + title + "\" is duplicate");
+            movieDup++;
+            return;
+        }
+
+        movies.put(id, movie);
     }
 
-    private Star parseActor(Element actor) {
+    private void parseActor(Element actor) {
         // Get actor name
         String name = getTextValue(actor, "stagename");
         if (name == null)
         {
             System.out.println("Actor has invalid name");
-            return null;
+            return;
         }
 
         // Get date of birth
         int dob = getIntValue(actor, "dob");
 
         // create a new Star with values read from xml nodes
-        return new Star(name, dob);
+        if (starIsDupe(name, dob)) {
+            System.out.println(name + " is a duplicate");
+            starDup++;
+        }
+        Star star = new Star(name, dob);
+        stars.add(star);
     }
 
     private void parseCastInFilm(Element dirfilms) {
@@ -213,17 +240,12 @@ public class DomParser {
             Element element = (Element) nodeList.item(i);
 
             // get the Cast object
-            Cast cast = parseCast(element);
-
-            // add it to list if movie is properly made
-            if (cast != null) {
-                casts.add(cast);
-            }
+            parseCast(element);
         }
 
     }
 
-    private Cast parseCast(Element element) {
+    private void parseCast(Element element) {
         // Separate actors
         NodeList nodeList = element.getElementsByTagName("m");
 
@@ -231,21 +253,37 @@ public class DomParser {
         Element firstElem = (Element) nodeList.item(0);
         String title = getTextValue(firstElem, "t");
         if (title == null) {
-            return null;
+            return;
+        }
+        String id = getTextValue((Element)nodeList.item(0), "f");
+
+        if (casts.containsKey(id)) {
+            return;
         }
 
         // Create new cast item
-        Cast cast = new Cast(title);
+        Cast cast = new Cast(id);
 
         // Add star
         for (int i = 0; i < nodeList.getLength(); i++) {
+            String movieId = getTextValue((Element)nodeList.item(i), "f");
+            if (!movies.containsKey(movieId)) {
+                System.out.println("MovieID \"" + movieId + "\" does not exist");
+                movieNotFound++;
+                return;
+            }
             String star = getTextValue((Element)nodeList.item(i), "a");
+            if (star != null && findStar(star)) {
+                System.out.println("Star " + star + " does not exist");
+                starNotFound++;
+            }
             if (star != null) {
                 cast.addStar(star);
             }
         }
 
-        return cast;
+        // add it to list if movie is properly made
+        casts.put(id, cast);
     }
 
     /**
@@ -281,21 +319,50 @@ public class DomParser {
         }
     }
 
+    private boolean movieIsDupe(String director, String title, int year) {
+        for (Movie m : movies.values()) {
+            if (m.isEqual(title, director, year))
+                return true;
+        }
+        return false;
+
+    }
+
+    private boolean starIsDupe(String name, int year) {
+        for (Star s : stars) {
+            if (s.isEqual(name, year))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean findStar(String name) {
+        for (Star s : stars) {
+            if (s.getName().equals(name))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Iterate through the list and print the
      * content to console
      */
-    private void printMovieData() {
-
+    private void printData() {
         System.out.println("Total parsed " + movies.size() + " movies");
-    }
-    private void printStarsData() {
-
         System.out.println("Total parsed " + stars.size() + " stars");
-    }
-    private void printCastData() {
-
         System.out.println("Total parsed " + casts.size() + " casts");
+        System.out.println("Total parsed " + genres.size() + " genres");
+    }
+
+    private void printInconsistencies() {
+
+        System.out.println(movieDup + " duplicate movies");
+        System.out.println(movieInconsistent + " inconsistent movies");
+        System.out.println(movieYear + " invalid movie years");
+        System.out.println(movieNotFound + " movies not found");
+        System.out.println(starDup + " duplicate stars");
+        System.out.println(starNotFound + " stars not found in casts");
     }
 
     private String id_increment(String id) {
@@ -349,8 +416,6 @@ public class DomParser {
                     "FROM DUAL " +
                     "WHERE NOT EXISTS (SELECT 1 FROM stars_in_movies WHERE starId = ? AND movieId = ?)";
 
-            String get_movie_query = "SELECT id FROM movies WHERE title = ?";
-
             // Create genre statement
             PreparedStatement genreStatement = conn.prepareStatement(new_genre_query);
             conn.setAutoCommit(false);
@@ -373,155 +438,163 @@ public class DomParser {
             PreparedStatement insertBatch = conn.prepareStatement(genre_in_movie_query);
             genreStatement = conn.prepareStatement(get_genre_query);
 
-            for (Movie m : movies) {
-                // Insert movie
-                PreparedStatement statement = conn.prepareStatement(movie_query);
-                if (m.getId() != null) {
-                    statement.setString(1, m.getId());
-                    statement.setString(2, m.getTitle());
-                    statement.setInt(3, m.getYear());
-                    statement.setString(4, m.getDirector());
-                    statement.setString(5, m.getTitle());
-                    statement.setString(6, m.getId());
-
-                    // Perform the query
-                    if (statement.executeUpdate() > 0) {
-                        // If the movie was inserted, insert its genres
-                        for (String g : m.getGenres()) {
-                            genreStatement.setString(1, g);
-                            ResultSet rs = genreStatement.executeQuery();
-                            // Get genreId
-                            if (rs.next()) {
-                                int genreId = rs.getInt("id");
-
-                                // Insert batch
-                                insertBatch.setInt(1, genreId);
-                                insertBatch.setString(2, m.getId());
-                                insertBatch.setInt(3, genreId);
-                                insertBatch.setString(4, m.getId());
-                                insertBatch.addBatch();
-                                insertCount++;
-
-                                // If at 2000, run transaction
-                                if (insertCount >= 2000) {
-                                    insertBatch.executeBatch();
-                                    conn.commit();
-                                    insertCount = 0;
-                                }
-
-                            }
-                            rs.close();
-                        }
-                    }
-                }
-                // If remaining, run transaction
-                if (insertCount > 0) {
-                    insertBatch.executeBatch();
-                    conn.commit();
-                    insertCount = 0;
-                }
-
-                statement.close();
-            }
-            genreStatement.close();
-            insertBatch.close();
-
-            System.out.println("Doing stars");
-            // Create stars statements
-            PreparedStatement starsYearBatch = conn.prepareStatement(star_query);
-            PreparedStatement starsNoYearBatch = conn.prepareStatement(star_no_year_query);
-            conn.setAutoCommit(false);
-            insertCount = 0;
-
-            // Get max starId
+//            for (Movie m : movies.values()) {
+//                // Insert movie
+//                PreparedStatement statement = conn.prepareStatement(movie_query);
+//                if (m.getId() != null) {
+//                    statement.setString(1, m.getId());
+//                    statement.setString(2, m.getTitle());
+//                    statement.setInt(3, m.getYear());
+//                    statement.setString(4, m.getDirector());
+//                    statement.setString(5, m.getTitle());
+//                    statement.setString(6, m.getId());
+//
+//                    // Perform the query
+//                    if (statement.executeUpdate() > 0) {
+//                        // If the movie was inserted, insert its genres
+//                        for (String g : m.getGenres()) {
+//                            genreStatement.setString(1, g);
+//                            ResultSet rs = genreStatement.executeQuery();
+//                            // Get genreId
+//                            if (rs.next()) {
+//                                int genreId = rs.getInt("id");
+//
+//                                // Insert batch
+//                                insertBatch.setInt(1, genreId);
+//                                insertBatch.setString(2, m.getId());
+//                                insertBatch.setInt(3, genreId);
+//                                insertBatch.setString(4, m.getId());
+//                                insertBatch.addBatch();
+//                                insertCount++;
+//
+//                                // If at 2000, run transaction
+//                                if (insertCount >= 2000) {
+//                                    insertBatch.executeBatch();
+//                                    conn.commit();
+//                                    insertCount = 0;
+//                                }
+//
+//                            }
+//                            rs.close();
+//                        }
+//                    }
+//                }
+//                // If remaining, run transaction
+//                if (insertCount > 0) {
+//                    insertBatch.executeBatch();
+//                    conn.commit();
+//                    insertCount = 0;
+//                }
+//
+//                statement.close();
+//            }
+//            genreStatement.close();
+//            insertBatch.close();
+//
+//            System.out.println("Doing stars");
+//            // Create stars statements
+//            PreparedStatement starsYearBatch = conn.prepareStatement(star_query);
+//            PreparedStatement starsNoYearBatch = conn.prepareStatement(star_no_year_query);
+//            conn.setAutoCommit(false);
+//            insertCount = 0;
+//
+//            // Get max starId
             String starid = "nm0000000";
             PreparedStatement statement = conn.prepareStatement(get_max_string_id);
             ResultSet rs = statement.executeQuery();
-            conn.commit();
-
-            rs.next();
-            if (rs.getString("id") != null) {
-                starid = rs.getString("id");
-            }
-            statement.close();
-            rs.close();
-
-            for (Star s : stars) {
-                starid = id_increment(starid);
-
-                // Check birthyear, use corresponding insert
-                if (s.getDob() != -1) {
-                    starsYearBatch.setString(1, starid);
-                    starsYearBatch.setString(2, s.getName());
-                    starsYearBatch.setInt(3, s.getDob());
-                    starsYearBatch.setString(4, s.getName());
-                    starsYearBatch.setInt(5, s.getDob());
-                    starsYearBatch.addBatch();
-                } else {
-                    starsNoYearBatch.setString(1, starid);
-                    starsNoYearBatch.setString(2, s.getName());
-                    starsNoYearBatch.setString(3, s.getName());
-                    starsNoYearBatch.addBatch();
-                }
-                insertCount++;
-
-                // If at 2000, run transaction
-                if (insertCount >= 2000) {
-                    starsYearBatch.executeBatch();
-                    starsNoYearBatch.executeBatch();
-                    conn.commit();
-                    insertCount = 0;
-                }
-            }
-            // If remaining, run transaction
-            if (insertCount > 0) {
-                starsYearBatch.executeBatch();
-                starsNoYearBatch.executeBatch();
-                conn.commit();
-                insertCount = 0;
-            }
-            starsYearBatch.close();
-            starsNoYearBatch.close();
+//            conn.commit();
+//
+//            rs.next();
+//            if (rs.getString("id") != null) {
+//                starid = rs.getString("id");
+//            }
+//            statement.close();
+//            rs.close();
+//
+//            for (Star s : stars) {
+//                starid = id_increment(starid);
+//
+//                // Check birthyear, use corresponding insert
+//                if (s.getDob() != -1) {
+//                    starsYearBatch.setString(1, starid);
+//                    starsYearBatch.setString(2, s.getName());
+//                    starsYearBatch.setInt(3, s.getDob());
+//                    starsYearBatch.setString(4, s.getName());
+//                    starsYearBatch.setInt(5, s.getDob());
+//                    starsYearBatch.addBatch();
+//                } else {
+//                    starsNoYearBatch.setString(1, starid);
+//                    starsNoYearBatch.setString(2, s.getName());
+//                    starsNoYearBatch.setString(3, s.getName());
+//                    starsNoYearBatch.addBatch();
+//                }
+//                insertCount++;
+//
+//                // If at 2000, run transaction
+//                if (insertCount >= 2000) {
+//                    starsYearBatch.executeBatch();
+//                    starsNoYearBatch.executeBatch();
+//                    conn.commit();
+//                    insertCount = 0;
+//                }
+//            }
+//            // If remaining, run transaction
+//            if (insertCount > 0) {
+//                starsYearBatch.executeBatch();
+//                starsNoYearBatch.executeBatch();
+//                conn.commit();
+//                insertCount = 0;
+//            }
+//            starsYearBatch.close();
+//            starsNoYearBatch.close();
 
             System.out.println("Doing cast");
             // Create stars_in_movies statemetns
-            PreparedStatement getMovieStatement = conn.prepareStatement(get_movie_query);
             PreparedStatement getStarStatement = conn.prepareStatement(get_star_query);
             PreparedStatement starInMovieStatement = conn.prepareStatement(stars_in_movie_query);
+            int what = 0;
 
-            for (Cast c : casts) {
-                // Get movie title
-                getMovieStatement.setString(1, c.getTitle());
+            for (Cast c : casts.values()) {
+                for (String s : c.getStars()) {
+                    // Get star name
+                    getStarStatement.setString(1, s);
 
-                rs = getMovieStatement.executeQuery();
-                if (rs.next()) {
-                    // Get movieId
-                    String movieid = rs.getString("id");
+                    rs = getStarStatement.executeQuery();
+                    if (rs.next()) {
+                        // Get starId
+                        starid = rs.getString("id");
 
-                    for (String s : c.getStars()) {
-                        // Get star name
-                        getStarStatement.setString(1, s);
+                        String movie = "SELECT * FROM movies WHERE id=?";
+                        PreparedStatement man = conn.prepareStatement(movie);
+                        man.setString(1, c.getId());
+                        if (!man.executeQuery().next())
+                            System.out.println(c.getId() + " Not found" + starid);
 
-                        rs = getStarStatement.executeQuery();
-                        if (rs.next()) {
-                            // Get starId
-                            starid = rs.getString("id");
+                        if (c.getId().equals("BLe12"))
+                            System.out.println("Fucker: " + c.getId() + " and" + starid);
 
-                            // Add star_in_movie to batch
+                        // Add star_in_movie to batch
+                        try {
                             starInMovieStatement.setString(1, starid);
-                            starInMovieStatement.setString(2, movieid);
+                            starInMovieStatement.setString(2, c.getId());
                             starInMovieStatement.setString(3, starid);
-                            starInMovieStatement.setString(4, movieid);
+                            starInMovieStatement.setString(4, c.getId());
                             starInMovieStatement.addBatch();
-                            insertCount++;
+                        insertCount++;
 
-                            // If at 2000, run transaction
-                            if (insertCount >= 2000) {
-                                starInMovieStatement.executeBatch();
-                                conn.commit();
-                                insertCount = 0;
-                            }
+                        // If at 2000, run transaction
+                        if (insertCount >= 2000) {
+                            starInMovieStatement.executeBatch();
+                            conn.commit();
+                            insertCount = 0;
                         }
+                        } catch (Exception e) {
+                            System.out.println("." + c.getId() + " " + starid);
+                            System.out.println(e.getMessage());
+                            what = 1;
+                        }
+                        if (what == 1 && insertCount == 1000)
+                            throw new RuntimeException();
                     }
                 }
             }
@@ -531,7 +604,6 @@ public class DomParser {
                 conn.commit();
             }
             statement.close();
-            getMovieStatement.close();
             getStarStatement.close();
             starInMovieStatement.close();
             rs.close();
@@ -541,15 +613,18 @@ public class DomParser {
         }
     }
 
+//    private void
+
     public static void main(String[] args)  throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        // Set db connection
+        Class.forName("com.mysql.jdbc.Driver").newInstance();
+        String jdbcURL="jdbc:mysql://localhost:3306/testmoviedb";
+
         // create an instance
-        DomParser domParserExample = new DomParser();
+        DomParser domParserExample = new DomParser(jdbcURL);
 
         // call run example
         domParserExample.runParser();
-
-        Class.forName("com.mysql.jdbc.Driver").newInstance();
-        String jdbcURL="jdbc:mysql://localhost:3306/testmoviedb";
 
         // Insert values
         domParserExample.insertValues(jdbcURL);
