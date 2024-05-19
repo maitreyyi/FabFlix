@@ -132,10 +132,10 @@ public class MovieListServlet extends HttpServlet {
             else {
                 movie_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
                         "JOIN stars AS s ON sim.starId = s.id " +
-                        "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                        "WHERE MATCH(title) AGAINST (? IN BOOLEAN MODE) AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
                 count_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
                         "JOIN stars AS s ON sim.starId = s.id " +
-                        "WHERE m.title LIKE ? AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                        "WHERE MATCH(title) AGAINST (? IN BOOLEAN MODE) AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
             }
 
             // Assign sorting
@@ -171,7 +171,11 @@ public class MovieListServlet extends HttpServlet {
             PreparedStatement count_statement = conn.prepareStatement(count_query);
 
             //check if title LIKE '%%'still works how we intended it to
-            title = '%' + title + '%';
+            title = title.trim();
+            title = title.replace(" ", "* +");
+            title = "+" + title + "*";
+            System.out.println(title);
+
             director = '%' + director + '%';
             star_name = '%' + star_name + '%';
 
