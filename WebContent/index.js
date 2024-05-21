@@ -46,10 +46,7 @@ function handleResult(resultData) {
 
 }
 
-const form = document.getElementById("search");
-const submitButton = form.querySelector("button[type='submit']");
-submitButton.addEventListener("click", function(event) {
-    // Prevent the default button click behavior
+function performSearch(event){
     event.preventDefault();
     const searchData = {}
 
@@ -83,9 +80,20 @@ submitButton.addEventListener("click", function(event) {
             queryString += key + '=' + encodeURIComponent(searchData[key]);
         }
     }
-    window.location = `movie-list.html?${queryString}`
+    window.location = `movie-list.html?${queryString}`;
+}
 
+const advancedForm = document.getElementById("search");
+const submitButton = advancedForm.querySelector("button[type='submit']");
+const form = document.getElementById("title-search");
+
+form.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        performSearch(event);
+    }
 });
+submitButton.addEventListener("click", performSearch);
+
 
 jQuery.ajax({
     dataType: "json",  // Setting return data type
