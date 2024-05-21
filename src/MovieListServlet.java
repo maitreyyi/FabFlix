@@ -132,10 +132,14 @@ public class MovieListServlet extends HttpServlet {
             else {
                 movie_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
                         "JOIN stars AS s ON sim.starId = s.id " +
-                        "WHERE MATCH(title) AGAINST (? IN BOOLEAN MODE) AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                        "WHERE m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
                 count_query += "JOIN stars_in_movies AS sim on m.id = sim.movieId " +
                         "JOIN stars AS s ON sim.starId = s.id " +
-                        "WHERE MATCH(title) AGAINST (? IN BOOLEAN MODE) AND m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                        "WHERE m.director LIKE ? AND s.name LIKE ? AND m.year LIKE ? ";
+                if (!title.equals("%")) {
+                    movie_query += "AND MATCH(title) AGAINST (? IN BOOLEAN MODE) ";
+                    count_query += "AND MATCH(title) AGAINST (? IN BOOLEAN MODE) ";
+                }
             }
 
             // Assign sorting
@@ -171,9 +175,11 @@ public class MovieListServlet extends HttpServlet {
             PreparedStatement count_statement = conn.prepareStatement(count_query);
 
             //check if title LIKE '%%'still works how we intended it to
-            title = title.trim();
-            title = title.replace(" ", "* +");
-            title = "+" + title + "*";
+            if (!title.equals("%")) {
+                title = title.trim();
+                title = title.replace(" ", "* +");
+                title = "+" + title + "*";
+            }
             System.out.println(title);
 
             director = '%' + director + '%';
@@ -192,8 +198,10 @@ public class MovieListServlet extends HttpServlet {
                 statement.setString(index++, start_adjusted);
             }
             else {
-                count_statement.setString(index, title);
-                statement.setString(index++, title);
+                if (!title.equals("%")) {
+                    count_statement.setString(index, title);
+                    statement.setString(index++, title);
+                }
                 count_statement.setString(index, director);
                 statement.setString(index++, director);
                 count_statement.setString(index, star_name);
@@ -203,6 +211,7 @@ public class MovieListServlet extends HttpServlet {
             }
             statement.setInt(index++, Integer.parseInt(limit));
             statement.setInt(index, offset);
+            System.out.println(statement);
 
             // Perform the query
             ResultSet rs = statement.executeQuery();
