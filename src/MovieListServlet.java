@@ -198,16 +198,16 @@ public class MovieListServlet extends HttpServlet {
                 statement.setString(index++, start_adjusted);
             }
             else {
-                if (!title.equals("%")) {
-                    count_statement.setString(index, title);
-                    statement.setString(index++, title);
-                }
                 count_statement.setString(index, director);
                 statement.setString(index++, director);
                 count_statement.setString(index, star_name);
                 statement.setString(index++, star_name);
                 count_statement.setString(index, year);
                 statement.setString(index++, year);
+                if (!title.equals("%")) {
+                    count_statement.setString(index, title);
+                    statement.setString(index++, title);
+                }
             }
             statement.setInt(index++, Integer.parseInt(limit));
             statement.setInt(index, offset);

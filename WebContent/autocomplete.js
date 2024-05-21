@@ -120,3 +120,29 @@ $('#autocomplete').autocomplete({
     // Set minimum characters to 3
     minChars: 3
 });
+
+/*
+* do normal full text search if no suggestion is selected
+*/
+function handleNormalSearch(event) {
+    event.preventDefault();
+    const searchData = {}
+    const form = document.getElementById("title-search");
+    const formData = new FormData(form);
+    const title = formData.get("title-auto");
+
+    if(title && title.length > 0) {
+        searchData['title'] = title;
+        console.log("doing normal search with query: " + searchData["title"]);
+        window.location = `movie-list.html?title=`+ encodeURIComponent(searchData["title"]);
+    }
+}
+
+// bind pressing enter key to a handler function
+$('#autocomplete').keypress(function(event) {
+    // keyCode 13 is the enter key
+    if (event.keyCode == 13) {
+        // pass the value of the input box to the handler function
+        handleNormalSearch(event)
+    }
+})

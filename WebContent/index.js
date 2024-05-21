@@ -83,13 +83,14 @@ function performSearch(event){
     window.location = `movie-list.html?${queryString}`;
 }
 
-const advancedForm = document.getElementById("search");
-const submitButton = advancedForm.querySelector("button[type='submit']");
-const form = document.getElementById("title-search");
+// Add event listener for advance searching
+const form = document.getElementById("search");
+const submitButton = form.querySelector("button[type='submit']");
 
 form.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         performSearch(event);
+        console.log("Advanced search")
     }
 });
 submitButton.addEventListener("click", performSearch);
