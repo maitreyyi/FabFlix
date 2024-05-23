@@ -180,7 +180,6 @@ public class MovieListServlet extends HttpServlet {
                 title = title.replace(" ", "* +");
                 title = "+" + title + "*";
             }
-            System.out.println(title);
 
             director = '%' + director + '%';
             star_name = '%' + star_name + '%';
@@ -211,7 +210,6 @@ public class MovieListServlet extends HttpServlet {
             }
             statement.setInt(index++, Integer.parseInt(limit));
             statement.setInt(index, offset);
-            System.out.println(statement);
 
             // Perform the query
             ResultSet rs = statement.executeQuery();

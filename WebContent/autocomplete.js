@@ -39,6 +39,19 @@ function handleLookup(query, doneCallback) {
     })
 }
 
+/* Remove first element from mapping */
+function removeFirstElement(map) {
+    let newMap = new Map();
+    let first = true;
+
+    for (const [key, value] of map.entries()) {
+        if (!first)
+            newMap.set(key, value);
+        first = false;
+    }
+    return newMap;
+}
+
 
 /*
  * This function is used to handle the ajax success callback function.
@@ -63,6 +76,8 @@ function handleLookupAjaxSuccess(data, query, doneCallback) {
         let map = new Map(JSON.parse(localStorage.getItem("autocomplete")));
         // If entry for input does not exist, add it to the mapping
         if (!map.has(input)) {
+            if (map.size >= 20)
+                map = removeFirstElement(map);
             map.set(input, data);
             localStorage.setItem("autocomplete", JSON.stringify(Array.from(map.entries())));
         }
