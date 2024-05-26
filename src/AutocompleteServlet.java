@@ -26,8 +26,13 @@ public class AutocompleteServlet extends HttpServlet {
     private DataSource dataSource;
 
     public void init(ServletConfig config) {
+        Random random = new Random();
         try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            if(random.nextBoolean()){
+                dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/slavedb");
+            } else {
+                dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/masterdb");
+            }
         } catch (NamingException e) {
             e.printStackTrace();
         }

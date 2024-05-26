@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Random;
 
 @WebServlet(name = "EmployeeServlet", urlPatterns = "/api/employee_login")
 public class EmployeeLoginServlet extends HttpServlet {
@@ -23,8 +24,13 @@ public class EmployeeLoginServlet extends HttpServlet {
     private DataSource dataSource;
 
     public void init(ServletConfig config) {
+        Random random = new Random();
         try {
-            dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/moviedb");
+            if(random.nextBoolean()){
+                dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/slavedb");
+            } else {
+                dataSource = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/masterdb");
+            }
         } catch (NamingException e) {
             e.printStackTrace();
         }
