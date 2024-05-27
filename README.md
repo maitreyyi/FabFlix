@@ -14,10 +14,9 @@
 ### Group Member Contributions: 
 
 #### Sharon:
-1. Set up HTTPS for AWS machine
-2. Set up reCAPTCHA for local and AWS machines
-3. Added employees login page and adjusted redirection based on type of user
-4. Added code for parsing and inserting XML file data
+1. Adjusted title search to use full-text search
+2. Implemented Autocomplete with full-text and caching
+3. Adjusted navbar for searching on each page
 
 #### Maitreyi:
 1. Implemented JDBC Connection Pooling
@@ -28,10 +27,3 @@
 Explain how to use Connection Pooling using two backend servers
 
 By using connection pooling, we are able to efficiently manage connections using two backend servers. This is done by splitting requests between the two backend servers and reusing connections rather than creating new ones for each query which optimizes resource usage. With our two backend servers: Master, Slave, we are able to reduce the load on the master server to improve performance and scale our performance. In our implementation, the master instance is the only instance that handles write requests, and it shares read requests with slave (which is assigned randomly to either server).
-
-
-Total parsed 8757 casts
-
-Total parsed 9 genres
-
-#### All inconsistencies can be found in inconsistency_report.txt
