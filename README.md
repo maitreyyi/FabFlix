@@ -34,6 +34,6 @@
 7. [EmployeeLoginServlet](url)
 8. [GenreBrowseServlet](url)
 9. [LoginServlet](url)
-10. [MovieListServlet]([url](https://github.com/UCI-Chenli-teaching/cs122b-s24-team-cs/blob/main/src/MovieListServlet.java))
+10. [MovieListServlet]([https://github.com/UCI-Chenli-teaching/cs122b-s24-team-cs/blob/main/src/MovieListServlet.java])
 #### Explain how Connection Pooling is utilized in the Fabflix code and how it works with two backend servers
 By using connection pooling, we are able to efficiently manage connections using two backend servers. This is done by splitting requests between the two backend servers and reusing connections rather than creating new ones for each query which optimizes resource usage. With our two backend servers: Master, Slave, we are able to reduce the load on the master server to improve performance and scale our performance. In our implementation, the master instance is the only instance that handles write requests, and it shares read requests with slave (which is assigned randomly to either server).
