@@ -1,8 +1,11 @@
 ## CS 122B Project 3 FabFlix
 
 ### Demo: 
-1. Video URL: https://screenrec.com/share/SpbjeHsuJW
-2. URL to access: https://3.22.77.90:8443/cs122b-team-cs/login.html
+1. Video URL: https://www.youtube.com/watch?v=HW7fYep3yXQ
+2. Master instance: http://54.193.76.82:8080/cs122b-team-cs/login.html
+3. Slave instance: http://54.219.204.86:8080/cs122b-team-cs/
+4. Balancer (AWS): http://54.193.174.184:80/cs122b-team-cs
+5. Balancer (google cloud):  http://34.102.65.206/cs122b-team-cs/
 
 ### Instructions to deploy Fablix: 
 1. Clone this repository using `git clone https://github.com/UCI-Chenli-teaching/cs122b-s24-team-cs.git'
@@ -17,58 +20,15 @@
 4. Added code for parsing and inserting XML file data
 
 #### Maitreyi:
+1. Implemented JDBC Connection Pooling
+2. Worked on mysql master-slave replication on AWS instances
+3. Created two balancers: AWS and Google Cloud and enabled load-balancing, connection Pooling, and sticky sessions.
 
-1. Created index page for employee dashboard and displayed meta data of all the tables in moviedb database
-2. Added add-star page and add-movie page with message of success/duplicate after communication with servlet
-3. Worked on stored-procedures for add-movie and add-star as well as the servlets
-4. Helped debug issues we ran into when integrating all features together
+### Connection Pooling
+Explain how to use Connection Pooling using two backend servers
 
-### PreparedStatement Files:
-1. AddMovieServlet
-2. AddStarServlet
-3. CartServlet
-4. ConfirmationServlet
-5. DashboardServlet
-6. DomParser
-7. EmployeeLoginServlet
-8. GenreBrowseServlet
-9. LoginServlet
-10. MovieListServlet
-11. PurchaseServlet
-12. SingleMovieServlet
-13. SingleStarServlet
+By using connection pooling, we are able to efficiently manage connections using two backend servers. This is done by splitting requests between the two backend servers and reusing connections rather than creating new ones for each query which optimizes resource usage. With our two backend servers: Master, Slave, we are able to reduce the load on the master server to improve performance and scale our performance. In our implementation, the master instance is the only instance that handles write requests, and it shares read requests with slave (which is assigned randomly to either server).
 
-### XML Optimizations
-Details recorded based on local machine
-1. Naive Approach
-   - This approach took more than 45 minutes due to the tremendous amount of transactions and duplication checking only upon inserting
-2. Batch insertion
-   - This approach used code from BatchInsert.java example in order to reduce the number of transactions. This reduced the time by more than half, for a total of about 21 minutes
-3. HashMaps
-   - By creating a map of the already existing entries, the inserts were able to assume no duplicate inserts, thus reducing the amount of search queries required to locate duplicates. This, along with batch insert, reduce the time to about 1 minute.
-
-### XML Inconsistency Report
-13 duplicate movies 
-- Movies with the same information
-
-77 inconsistent movies 
-- Movies with invalid ids or titles
-
-17 invalid movie years 
-- Movies with invalid years
-
-240 movies not found 
-- Movies referenced by cast that did not exist
-
-340 duplicate stars 
-- Stars with the same information
-
-15294 stars not found in casts
-- Stars referenced by casts that did not exist
-
-Total parsed 12025 movies
-
-Total parsed 6523 stars
 
 Total parsed 8757 casts
 
