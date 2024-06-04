@@ -44,10 +44,10 @@ public class LoginServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try (Connection conn = dataSource.getConnection()) {
-            String gRecaptchaResponse = request.getParameter("g-recaptcha-response");
-            System.out.println("gRecaptchaResponse=" + gRecaptchaResponse);
+            //String gRecaptchaResponse = request.getParameter("g-recaptcha-response");
+            //System.out.println("gRecaptchaResponse=" + gRecaptchaResponse);
 
-            RecaptchaVerifyUtils.verify(gRecaptchaResponse);
+            //RecaptchaVerifyUtils.verify(gRecaptchaResponse);
 
 
             String username = request.getParameter("username");
@@ -65,10 +65,10 @@ public class LoginServlet extends HttpServlet {
 
             if(rs.next())
             {
-                String encrypted_password = rs.getString("password");
-                Boolean success = new StrongPasswordEncryptor().checkPassword(password, encrypted_password);
+                String pwd = rs.getString("password");
+                //Boolean success = new StrongPasswordEncryptor().checkPassword(password, encrypted_password);
 
-                if (!success) // Double-check string comparisons
+                if (!pwd.equals(password)) // Double-check string comparisons
                 {
                     // Password is wrong, login fail
                     responseJsonObject.addProperty("status", "fail");
@@ -107,6 +107,7 @@ public class LoginServlet extends HttpServlet {
             // Write error message JSON object to output
             JsonObject jsonObject = new JsonObject();
             request.getServletContext().log("Error:", e);
+
             if (e.getMessage().equals("invalid-input-response")) {
                 jsonObject.addProperty("status", "failed");
                 jsonObject.addProperty("message", "Error verifying reCAPTCHA, please try again");
