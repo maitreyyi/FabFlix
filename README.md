@@ -1,26 +1,21 @@
-## CS 122B FabFlix
+# CS 122B FabFlix
 
 ### Demo: 
 1. Video URL: https://screenrec.com/share/Vtx68e7fQk
 
-### Instructions to deploy Fablix: 
+## Instructions to deploy Fablix: 
 
-#### Deploy FabFlix (Remotely)
-Git clone repository: git clone https://github.com/maitreyyi/FabFlix.git
-
-Change directory into repo: cd cs122b-spring20-team-46
-
-Build war file: mvn package
-
-Copy the war file into tomcat: cp ./target/*.war /home/ubuntu/tomcat/webapps
-
-Open Tomcat Domain at <your-amazon-instance-domain>:8080
-
-Go to Manager Apps > Click FabFlix
+### Deploy FabFlix (Remotely)
+1. Git clone repository: git clone https://github.com/maitreyyi/FabFlix.git
+2. Change directory into repo: cd cs122b-s24-team-cs
+3. Build war file: mvn package
+4. Copy the war file into tomcat: cp ./target/*.war /var/lib/tomcat10/webapps
+5. Open Tomcat Domain at <your-amazon-instance-domain>:8080
+6. Go to Manager Apps > Click FabFlix
 
 You should now be on the movie list page.
 
-#### Deploy FabFlix (Locally on Development Machine)
+### Deploy FabFlix (Locally on Development Machine)
 Git clone repository
 git clone https://github.com/maitreyyi/FabFlix.git
 
